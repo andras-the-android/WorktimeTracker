@@ -8,13 +8,37 @@
     tools:context=".ui.main.MainFragment">
 
     <TextView
-        android:id="@+id/message"
+        android:id="@+id/twWork"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="MainFragment"
-        app:layout_constraintBottom_toBottomOf="parent"
+        tools:text="0:00:00"
+        android:textSize="64sp"
+        android:lines="1"
+        app:layout_constraintBottom_toBottomOf="@id/twRest"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/twRest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="0:00:00"
+        android:textSize="64sp"
+        android:lines="1"
+        app:layout_constraintBottom_toBottomOf="@id/button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/twWork" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/start"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/twRest" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
