@@ -58,8 +58,8 @@ class MainViewModel : ViewModel() {
 
     private fun updateViewState() {
         _state.postValue(ViewState(
-            workSec.toString(),
-            restSec.toString(),
+            workSec.toTimeString(),
+            restSec.toTimeString(),
             context.getString(if (isRunning) R.string.stop else R.string.start),
             period,
             isRunning
