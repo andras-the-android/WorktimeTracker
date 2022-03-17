@@ -1,10 +1,14 @@
 package hu.kts.wtracker.ui.main
 
 import android.content.Context
+import android.speech.tts.TextToSpeech
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import hu.kts.wtracker.*
+import hu.kts.wtracker.Timer
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class MainViewModel : ViewModel() {
@@ -16,6 +20,7 @@ class MainViewModel : ViewModel() {
     private val timer = Timer()
     private val context = WTrackerApp.instance.applicationContext
     private val preferences = context.getSharedPreferences("prefs", Context.MODE_PRIVATE)
+    private lateinit var textToSpeech: TextToSpeech
 
     private var workSec = 0
     private var restSec = 0
@@ -27,6 +32,13 @@ class MainViewModel : ViewModel() {
     init {
         restoreState()
         updateViewState()
+        textToSpeech = TextToSpeech(context) { status ->
+            if (status == TextToSpeech.ERROR) {
+                Toast.makeText(context, R.string.text_to_speech_error, Toast.LENGTH_SHORT).show()
+            } else {
+                textToSpeech.language = Locale.US
+            }
+        }
     }
 
     fun onButtonClicked() {
@@ -77,6 +89,7 @@ class MainViewModel : ViewModel() {
             ++restSegmentSec
         }
         updateViewState()
+        handleNotification()
     }
 
     private fun updateViewState() {
@@ -122,8 +135,19 @@ class MainViewModel : ViewModel() {
             }
             timer.start { onTimerTick() }
         }
-
     }
+
+    private fun handleNotification() {
+        if (period == Period.REST && restSegmentSec.isWholeMinute()) {
+            val minutes = TimeUnit.SECONDS.toMinutes(restSegmentSec.toLong()).toInt()
+            //notify minutely in the first 10 minutes and then once in every 5 minutes
+            if (minutes in 1..10 || minutes % 5 == 0) {
+                textToSpeech.speak("$minutes minutes", TextToSpeech.QUEUE_FLUSH, null, null)
+            }
+        }
+    }
+
+    private fun Int.isWholeMinute() = this % 60 == 0
 
     data class ViewState(val work: String,
                          val rest: String,

@@ -2,4 +2,5 @@
     <string name="app_name">Worktime Tracker</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
+    <string name="text_to_speech_error">Text to speech engine failed to initialize</string>
 </resources>
