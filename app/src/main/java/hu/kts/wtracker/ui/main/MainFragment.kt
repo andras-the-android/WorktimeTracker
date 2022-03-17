@@ -32,6 +32,8 @@ class MainFragment : Fragment() {
         viewModel.state.observe(viewLifecycleOwner) { viewState ->
             binding.twWork.text = viewState.work
             binding.twRest.text = viewState.rest
+            binding.twWorkSegment.text = viewState.workSegment
+            binding.twRestSegment.text = viewState.restSegment
             binding.button.text = viewState.buttonText
             val backgroundColor = when {
                 !viewState.isRunning -> R.color.bg_default

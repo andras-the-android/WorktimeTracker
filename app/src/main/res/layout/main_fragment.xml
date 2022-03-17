@@ -20,6 +20,18 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
+        android:id="@+id/twWorkSegment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="0:00:00"
+        android:textSize="32sp"
+        android:lines="1"
+        android:paddingTop="8dp"
+        app:layout_constraintBottom_toBottomOf="@id/twWork"
+        app:layout_constraintEnd_toEndOf="@id/twWork"
+        app:layout_constraintTop_toBottomOf="@id/twWork" />
+
+    <TextView
         android:id="@+id/twRest"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -30,6 +42,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/twWork" />
+
+    <TextView
+        android:id="@+id/twRestSegment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="0:00:00"
+        android:textSize="32sp"
+        android:lines="1"
+        android:paddingTop="8dp"
+        app:layout_constraintBottom_toBottomOf="@id/twRest"
+        app:layout_constraintEnd_toEndOf="@id/twRest"
+        app:layout_constraintTop_toBottomOf="@id/twRest" />
 
     <Button
         android:id="@+id/button"
