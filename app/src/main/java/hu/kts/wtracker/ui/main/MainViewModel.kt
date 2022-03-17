@@ -141,7 +141,7 @@ class MainViewModel : ViewModel() {
         if (period == Period.REST && restSegmentSec.isWholeMinute()) {
             val minutes = TimeUnit.SECONDS.toMinutes(restSegmentSec.toLong()).toInt()
             //notify minutely in the first 10 minutes and then once in every 5 minutes
-            if (minutes in 1..10 || minutes % 5 == 0) {
+            if (minutes in 1..15 || minutes % 5 == 0) {
                 textToSpeech.speak("$minutes minutes", TextToSpeech.QUEUE_FLUSH, null, null)
             }
         }
