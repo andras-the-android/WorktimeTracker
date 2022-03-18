@@ -68,16 +68,18 @@ class MainViewModel : ViewModel() {
     }
 
     fun onScreenTouch() {
-        if (period == Period.WORK) {
-            period =  Period.REST
-            restSegmentSec = 0
-        } else {
-            period =  Period.WORK
-            workSegmentSec = 0
-        }
+        if (isRunning) {
+            if (period == Period.WORK) {
+                period =  Period.REST
+                restSegmentSec = 0
+            } else {
+                period =  Period.WORK
+                workSegmentSec = 0
+            }
 
-        persistState()
-        updateViewState()
+            persistState()
+            updateViewState()
+        }
     }
 
     private fun onTimerTick() {
