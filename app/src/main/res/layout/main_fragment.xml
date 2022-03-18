@@ -8,61 +8,83 @@
     tools:context=".ui.main.MainFragment">
 
     <TextView
+        android:id="@+id/twWorkLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/work"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@id/twWork"
+        app:layout_constraintStart_toStartOf="@id/twWork" />
+
+    <TextView
         android:id="@+id/twWork"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="0:00:00"
-        android:textSize="64sp"
         android:lines="1"
-        app:layout_constraintBottom_toBottomOf="@id/twRest"
+        android:textSize="64sp"
+        app:layout_constraintBottom_toTopOf="@id/twRest"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="spread"
+        tools:text="0:00:00" />
 
     <TextView
         android:id="@+id/twWorkSegment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="0:00:00"
-        android:textSize="32sp"
         android:lines="1"
-        android:paddingTop="8dp"
-        app:layout_constraintBottom_toBottomOf="@id/twWork"
+        android:textSize="32sp"
         app:layout_constraintEnd_toEndOf="@id/twWork"
-        app:layout_constraintTop_toBottomOf="@id/twWork" />
+        app:layout_constraintTop_toBottomOf="@id/twWork"
+        tools:text="0:00:00" />
+
+    <TextView
+        android:id="@+id/twRestLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/rest"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@id/twRest"
+        app:layout_constraintStart_toStartOf="@id/twRest" />
 
     <TextView
         android:id="@+id/twRest"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="0:00:00"
-        android:textSize="64sp"
         android:lines="1"
-        app:layout_constraintBottom_toBottomOf="@id/button"
+        android:textSize="64sp"
+        app:layout_constraintBottom_toBottomOf="@id/guideline1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/twWork" />
+        app:layout_constraintTop_toBottomOf="@id/twWork"
+        tools:text="0:00:00" />
 
     <TextView
         android:id="@+id/twRestSegment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="0:00:00"
-        android:textSize="32sp"
         android:lines="1"
-        android:paddingTop="8dp"
-        app:layout_constraintBottom_toBottomOf="@id/twRest"
+        android:textSize="32sp"
         app:layout_constraintEnd_toEndOf="@id/twRest"
-        app:layout_constraintTop_toBottomOf="@id/twRest" />
+        app:layout_constraintTop_toBottomOf="@id/twRest"
+        tools:text="0:00:00" />
 
     <Button
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/start"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/twRest" />
+        app:layout_constraintTop_toTopOf="@id/guideline1" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.8" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
