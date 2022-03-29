@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import hu.kts.wtracker.R
@@ -41,6 +42,15 @@ class MainFragment : Fragment() {
                 else -> R.color.bg_rest
             }
             binding.root.setBackgroundColor(resources.getColor(backgroundColor, null))
+            keepScreenAwake(viewState.isRunning)
+        }
+    }
+
+    private fun keepScreenAwake(keep: Boolean) {
+        if (keep) {
+            requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 
