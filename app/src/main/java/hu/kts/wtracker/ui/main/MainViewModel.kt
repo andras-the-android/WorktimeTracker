@@ -28,6 +28,7 @@ class MainViewModel : ViewModel() {
     private var workSegmentSec = 0
     private var restSegmentSec = 0
     private var period = Period.WORK
+    private var lastPeriodSwitch = 0L
     private var isRunning = false
     private var notificationFrequency = NotificationFrequency.MIN1
 
@@ -85,6 +86,7 @@ class MainViewModel : ViewModel() {
                 workSegmentSec = 0
             }
 
+            lastPeriodSwitch = System.currentTimeMillis()
             persistState()
             updateViewState()
         }
@@ -121,7 +123,7 @@ class MainViewModel : ViewModel() {
             putInt(KEY_REST_TIME, restSec)
             putInt(KEY_WORK_SEGMENT_TIME, workSegmentSec)
             putInt(KEY_REST_SEGMENT_TIME, restSegmentSec)
-            putLong(KEY_LAST_PERIOD_SWITCH, System.currentTimeMillis())
+            putLong(KEY_LAST_PERIOD_SWITCH, lastPeriodSwitch)
             putBoolean(KEY_IS_RUNNING, isRunning)
             putString(KEY_PERIOD, period.toString())
             putString(KEY_NOTIFICATION_FREQUENCY, notificationFrequency.toString())
@@ -135,8 +137,8 @@ class MainViewModel : ViewModel() {
         restSec = preferences.getInt(KEY_REST_TIME, 0)
         workSegmentSec = preferences.getInt(KEY_WORK_SEGMENT_TIME, 0)
         restSegmentSec = preferences.getInt(KEY_REST_SEGMENT_TIME, 0)
+        lastPeriodSwitch = preferences.getLong(KEY_LAST_PERIOD_SWITCH, 0)
         if (isRunning) {
-            val lastPeriodSwitch = preferences.getLong(KEY_LAST_PERIOD_SWITCH, 0)
             val elapsedSecs = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - lastPeriodSwitch).toInt()
             if (period == Period.WORK) {
                 workSec += elapsedSecs
