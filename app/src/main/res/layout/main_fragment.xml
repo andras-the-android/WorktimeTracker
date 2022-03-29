@@ -71,13 +71,24 @@
         tools:text="0:00:00" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/btnStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/start"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/guideline1" />
+
+    <Button
+        android:id="@+id/btnNotificationFrequency"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="@string/sound_1min"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnStart" />
+
+
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline1"

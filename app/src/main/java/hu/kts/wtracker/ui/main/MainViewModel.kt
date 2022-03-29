@@ -3,6 +3,7 @@ package hu.kts.wtracker.ui.main
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -28,6 +29,7 @@ class MainViewModel : ViewModel() {
     private var restSegmentSec = 0
     private var period = Period.WORK
     private var isRunning = false
+    private var notificationFrequency = NotificationFrequency.MIN1
 
     init {
         restoreState()
@@ -41,7 +43,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun onButtonClicked() {
+    fun onStartButtonClicked() {
         if (isRunning) {
             timer.stop()
         } else {
@@ -52,7 +54,7 @@ class MainViewModel : ViewModel() {
         updateViewState()
     }
 
-    fun onButtonLongClicked(): Boolean {
+    fun onStartButtonLongClicked(): Boolean {
         return if (!isRunning) {
             workSec = 0
             restSec = 0
@@ -65,6 +67,12 @@ class MainViewModel : ViewModel() {
         } else {
             false
         }
+    }
+
+    fun onNotificationFrequencyButtonClicked() {
+        notificationFrequency = notificationFrequency.next()
+        persistState()
+        updateViewState()
     }
 
     fun onScreenTouch() {
@@ -102,7 +110,8 @@ class MainViewModel : ViewModel() {
             restSegmentSec.toTimeString(),
             context.getString(if (isRunning) R.string.stop else R.string.start),
             period,
-            isRunning
+            isRunning,
+            notificationFrequency
         ))
     }
 
@@ -115,6 +124,7 @@ class MainViewModel : ViewModel() {
             putLong(KEY_LAST_PERIOD_SWITCH, System.currentTimeMillis())
             putBoolean(KEY_IS_RUNNING, isRunning)
             putString(KEY_PERIOD, period.toString())
+            putString(KEY_NOTIFICATION_FREQUENCY, notificationFrequency.toString())
         }.apply()
     }
 
@@ -137,13 +147,13 @@ class MainViewModel : ViewModel() {
             }
             timer.start { onTimerTick() }
         }
+        notificationFrequency = NotificationFrequency.safeValueOf(preferences.getString(KEY_NOTIFICATION_FREQUENCY, ""))
     }
 
     private fun handleNotification() {
-        if (period == Period.REST && restSegmentSec.isWholeMinute()) {
+        if (period == Period.REST && notificationFrequency != NotificationFrequency.MUTED && restSegmentSec.isWholeMinute()) {
             val minutes = TimeUnit.SECONDS.toMinutes(restSegmentSec.toLong()).toInt()
-            //notify minutely in the first 10 minutes and then once in every 5 minutes
-            if (minutes in 1..15 || minutes % 5 == 0) {
+            if (minutes % notificationFrequency.frequency == 0) {
                 textToSpeech.speak("$minutes minutes", TextToSpeech.QUEUE_FLUSH, null, null)
             }
         }
@@ -157,7 +167,8 @@ class MainViewModel : ViewModel() {
                          val restSegment: String,
                          val buttonText: String,
                          val period: Period,
-                         val isRunning: Boolean)
+                         val isRunning: Boolean,
+                         val notificationFrequency: NotificationFrequency)
 
     enum class Period {
         WORK, REST;
@@ -168,6 +179,20 @@ class MainViewModel : ViewModel() {
                     valueOf(value ?: "")
                 } catch (e: IllegalArgumentException) {
                     WORK
+                }
+            }
+        }
+    }
+
+    enum class NotificationFrequency(val frequency: Int, @StringRes val label: Int) {
+        MIN1(1, R.string.sound_1min), MIN5(5, R.string.sound_5min), MUTED(0, R.string.sound_muted);
+
+        companion object {
+            fun safeValueOf(value: String?): NotificationFrequency {
+                return try {
+                    valueOf(value ?: "")
+                } catch (e: IllegalArgumentException) {
+                    MIN1
                 }
             }
         }

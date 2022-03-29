@@ -22,8 +22,9 @@ class MainFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = MainFragmentBinding.inflate(layoutInflater)
-        binding.button.setOnClickListener { viewModel.onButtonClicked() }
-        binding.button.setOnLongClickListener { viewModel.onButtonLongClicked() }
+        binding.btnStart.setOnClickListener { viewModel.onStartButtonClicked() }
+        binding.btnStart.setOnLongClickListener { viewModel.onStartButtonLongClicked() }
+        binding.btnNotificationFrequency.setOnClickListener { viewModel.onNotificationFrequencyButtonClicked() }
         binding.root.setOnClickListener { viewModel.onScreenTouch() }
         return binding.root
     }
@@ -35,13 +36,14 @@ class MainFragment : Fragment() {
             binding.twRest.text = viewState.rest
             binding.twWorkSegment.text = viewState.workSegment
             binding.twRestSegment.text = viewState.restSegment
-            binding.button.text = viewState.buttonText
+            binding.btnStart.text = viewState.buttonText
             val backgroundColor = when {
                 !viewState.isRunning -> R.color.bg_default
                 viewState.period == MainViewModel.Period.WORK -> R.color.bg_work
                 else -> R.color.bg_rest
             }
             binding.root.setBackgroundColor(resources.getColor(backgroundColor, null))
+            binding.btnNotificationFrequency.text = getString(viewState.notificationFrequency.label)
             keepScreenAwake(viewState.isRunning)
         }
     }

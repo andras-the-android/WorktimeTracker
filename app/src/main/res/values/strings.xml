@@ -5,4 +5,7 @@
     <string name="work">Work</string>
     <string name="rest">Rest</string>
     <string name="text_to_speech_error">Text to speech engine failed to initialize</string>
+    <string name="sound_1min">1 min</string>
+    <string name="sound_5min">5 min</string>
+    <string name="sound_muted">Muted</string>
 </resources>
