@@ -25,7 +25,8 @@ class MainFragment : Fragment() {
         binding.btnStart.setOnClickListener { viewModel.onStartButtonClicked() }
         binding.btnStart.setOnLongClickListener { viewModel.onStartButtonLongClicked() }
         binding.btnNotificationFrequency.setOnClickListener { viewModel.onNotificationFrequencyButtonClicked() }
-        binding.root.setOnClickListener { viewModel.onScreenTouch() }
+        binding.twWork.setOnClickListener { viewModel.onScreenTouch() }
+        binding.twRest.setOnClickListener { viewModel.onScreenTouch() }
         return binding.root
     }
 
