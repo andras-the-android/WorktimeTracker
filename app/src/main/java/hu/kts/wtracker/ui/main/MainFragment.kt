@@ -8,12 +8,12 @@ import android.view.WindowManager
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import hu.kts.wtracker.R
-import hu.kts.wtracker.databinding.MainFragmentBinding
+import hu.kts.wtracker.databinding.FragmentMainBinding
 
 class MainFragment : Fragment() {
 
     private lateinit var viewModel: MainViewModel
-    private lateinit var binding: MainFragmentBinding
+    private lateinit var binding: FragmentMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,7 +21,7 @@ class MainFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        binding = MainFragmentBinding.inflate(layoutInflater)
+        binding = FragmentMainBinding.inflate(layoutInflater)
         binding.btnStart.setOnClickListener { viewModel.onStartButtonClicked() }
         binding.btnStart.setOnLongClickListener { viewModel.onStartButtonLongClicked() }
         binding.btnNotificationFrequency.setOnClickListener { viewModel.onNotificationFrequencyButtonClicked() }
