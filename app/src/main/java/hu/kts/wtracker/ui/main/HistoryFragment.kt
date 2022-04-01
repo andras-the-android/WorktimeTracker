@@ -6,6 +6,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
@@ -28,6 +29,17 @@ class HistoryFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentHistoryBinding.inflate(inflater)
+
+        //TODO solve crash
+//        ViewCompat.setOnApplyWindowInsetsListener(binding.container) { view, windowInsets ->
+//            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+//            val layoutParams = ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+//            layoutParams.setMargins(insets.left, insets.left, insets.right, insets.bottom)
+//            view.layoutParams = layoutParams
+//
+//            WindowInsetsCompat.CONSUMED
+//        }
+
         return binding.root
     }
 
@@ -43,11 +55,15 @@ class HistoryFragment : Fragment() {
                 for (item in items) binding.container.addView(generateView(item))
             }
         }
+
+        viewModel.state.observe(viewLifecycleOwner) { state ->
+            binding.root.setBackgroundColor(ContextCompat.getColor(requireContext(), state.period.color))
+        }
     }
 
     private fun generateView(viewItem: MainViewModel.PeriodHistoryViewItem): View {
         return TextView(requireActivity()).apply {
-            layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, calcHeight(viewItem.duration))
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, calcHeight(viewItem.duration))
             setBackgroundColor(ContextCompat.getColor(requireContext(), viewItem.color))
             text = requireContext().getString(R.string.history_item_text, viewItem.timestamp, viewItem.duration)
             maxLines = 1

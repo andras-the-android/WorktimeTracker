@@ -7,6 +7,8 @@
 
     <LinearLayout
         android:id="@+id/container"
+        android:paddingTop="32dp"
+        android:paddingBottom="32dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"/>

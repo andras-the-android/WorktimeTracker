@@ -2,6 +2,7 @@ package hu.kts.wtracker
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -18,6 +19,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.pager.adapter = MainPagerAdapter(this)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
     }
 
     private inner class MainPagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {

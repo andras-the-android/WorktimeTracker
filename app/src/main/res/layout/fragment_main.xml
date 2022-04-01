@@ -75,6 +75,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/start"
+        android:background="@drawable/button_background"
+        android:textColor="@color/grey"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/guideline1" />
@@ -83,8 +85,10 @@
         android:id="@+id/btnNotificationFrequency"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         tools:text="@string/sound_1min"
+        android:background="@drawable/button_background"
+        android:textColor="@color/grey"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btnStart" />

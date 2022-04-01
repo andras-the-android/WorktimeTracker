@@ -8,6 +8,6 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="bg_default">@color/white</color>
-    <color name="bg_work">#FF00FF00</color>
-    <color name="bg_rest">#FFFF0000</color>
+    <color name="bg_work">#00E676</color>
+    <color name="bg_rest">#FF1744</color>
 </resources>
