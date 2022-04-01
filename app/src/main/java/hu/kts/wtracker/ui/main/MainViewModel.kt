@@ -2,11 +2,14 @@ package hu.kts.wtracker.ui.main
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import hu.kts.wtracker.*
 import hu.kts.wtracker.Timer
 import java.util.*
@@ -22,14 +25,16 @@ class MainViewModel : ViewModel() {
     private val context = WTrackerApp.instance.applicationContext
     private val preferences = context.getSharedPreferences("prefs", Context.MODE_PRIVATE)
     private lateinit var textToSpeech: TextToSpeech
+    private val gson = Gson()
+    private val periodHistoryItemType = object : TypeToken<ArrayList<PeriodHistoryItem>>() {}.type
 
     private var workSec = 0
     private var restSec = 0
     private var workSegmentSec = 0
     private var restSegmentSec = 0
     private var period = Period.STOPPED
-    private var lastPeriodSwitch = 0L
     private var notificationFrequency = NotificationFrequency.MIN1
+    private var periodHistory = ArrayList<PeriodHistoryItem>()
 
     init {
         restoreState()
@@ -51,6 +56,7 @@ class MainViewModel : ViewModel() {
             timer.start { onTimerTick() }
             period = Period.WORK
         }
+        periodHistory.add(PeriodHistoryItem(System.currentTimeMillis(), period))
         persistState()
         updateViewState()
     }
@@ -61,6 +67,7 @@ class MainViewModel : ViewModel() {
             restSec = 0
             workSegmentSec = 0
             restSegmentSec = 0
+            periodHistory = arrayListOf()
             persistState()
             updateViewState()
             true
@@ -85,7 +92,7 @@ class MainViewModel : ViewModel() {
                 workSegmentSec = 0
             }
 
-            lastPeriodSwitch = System.currentTimeMillis()
+            periodHistory.add(PeriodHistoryItem(System.currentTimeMillis(), period))
             persistState()
             updateViewState()
         }
@@ -121,9 +128,11 @@ class MainViewModel : ViewModel() {
             putInt(KEY_REST_TIME, restSec)
             putInt(KEY_WORK_SEGMENT_TIME, workSegmentSec)
             putInt(KEY_REST_SEGMENT_TIME, restSegmentSec)
-            putLong(KEY_LAST_PERIOD_SWITCH, lastPeriodSwitch)
             putString(KEY_PERIOD, period.toString())
             putString(KEY_NOTIFICATION_FREQUENCY, notificationFrequency.toString())
+            val toJson = gson.toJson(periodHistory)
+            Log.d("TAG", "persistState: $toJson")
+            putString(KEY_PERIOD_HISTORY, toJson)
         }.apply()
     }
 
@@ -133,8 +142,10 @@ class MainViewModel : ViewModel() {
         restSec = preferences.getInt(KEY_REST_TIME, 0)
         workSegmentSec = preferences.getInt(KEY_WORK_SEGMENT_TIME, 0)
         restSegmentSec = preferences.getInt(KEY_REST_SEGMENT_TIME, 0)
-        lastPeriodSwitch = preferences.getLong(KEY_LAST_PERIOD_SWITCH, 0)
+        periodHistory = gson.fromJson(preferences.getString(KEY_PERIOD_HISTORY, "[]"), periodHistoryItemType)
         if (period.isRunning()) {
+            //at this point there must be at least one item in the list
+            val lastPeriodSwitch = periodHistory.last().timestamp
             val elapsedSecs = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - lastPeriodSwitch).toInt()
             if (period == Period.WORK) {
                 workSec += elapsedSecs
@@ -166,6 +177,11 @@ class MainViewModel : ViewModel() {
                          val buttonText: String,
                          val period: Period,
                          val notificationFrequency: NotificationFrequency)
+
+    data class PeriodHistoryItem(
+        val timestamp: Long,
+        val period: Period
+    )
 
     enum class Period {
         STOPPED, WORK, REST;
