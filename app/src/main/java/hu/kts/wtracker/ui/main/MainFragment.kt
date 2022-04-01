@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import hu.kts.wtracker.R
 import hu.kts.wtracker.databinding.FragmentMainBinding
 
 class MainFragment : Fragment() {
@@ -17,7 +16,7 @@ class MainFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        viewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -38,12 +37,7 @@ class MainFragment : Fragment() {
             binding.twWorkSegment.text = viewState.workSegment
             binding.twRestSegment.text = viewState.restSegment
             binding.btnStart.text = viewState.buttonText
-            val backgroundColor = when (viewState.period) {
-                MainViewModel.Period.STOPPED -> R.color.bg_default
-                MainViewModel.Period.WORK -> R.color.bg_work
-                MainViewModel.Period.REST -> R.color.bg_rest
-            }
-            binding.root.setBackgroundColor(resources.getColor(backgroundColor, null))
+            binding.root.setBackgroundColor(resources.getColor(viewState.period.color, null))
             binding.btnNotificationFrequency.text = getString(viewState.notificationFrequency.label)
             keepScreenAwake(viewState.period.isRunning())
         }

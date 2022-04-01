@@ -2,8 +2,8 @@ package hu.kts.wtracker.ui.main
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
-import android.util.Log
 import android.widget.Toast
+import androidx.annotation.ColorRes
 import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -12,6 +12,8 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import hu.kts.wtracker.*
 import hu.kts.wtracker.Timer
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -20,6 +22,10 @@ class MainViewModel : ViewModel() {
     private val _state = MutableLiveData<ViewState>()
     val state: LiveData<ViewState>
        get() = _state
+
+    private val _historyState = MutableLiveData(LinkedList<PeriodHistoryViewItem>())
+    val historyState: LiveData<LinkedList<PeriodHistoryViewItem>>
+        get() = _historyState
 
     private val timer = Timer()
     private val context = WTrackerApp.instance.applicationContext
@@ -56,7 +62,7 @@ class MainViewModel : ViewModel() {
             timer.start { onTimerTick() }
             period = Period.WORK
         }
-        periodHistory.add(PeriodHistoryItem(System.currentTimeMillis(), period))
+        addToHistory(period)
         persistState()
         updateViewState()
     }
@@ -68,6 +74,7 @@ class MainViewModel : ViewModel() {
             workSegmentSec = 0
             restSegmentSec = 0
             periodHistory = arrayListOf()
+            _historyState.value = LinkedList<PeriodHistoryViewItem>()
             persistState()
             updateViewState()
             true
@@ -92,7 +99,7 @@ class MainViewModel : ViewModel() {
                 workSegmentSec = 0
             }
 
-            periodHistory.add(PeriodHistoryItem(System.currentTimeMillis(), period))
+            addToHistory(period)
             persistState()
             updateViewState()
         }
@@ -122,6 +129,16 @@ class MainViewModel : ViewModel() {
         ))
     }
 
+    private fun addToHistory(period: Period) {
+        val newItem = PeriodHistoryItem(System.currentTimeMillis(), period)
+        //This may seems weird at first but we always show the finished items in the history view.
+        //So the history view will always contain periodHistory.size - 1 elements
+        if (periodHistory.isNotEmpty()) {
+            _historyState.value = _historyState.value?.apply { add(periodHistory.last().toViewItem(newItem.timestamp)) }
+        }
+        periodHistory.add(newItem)
+    }
+
     private fun persistState() {
         preferences.edit().apply {
             putInt(KEY_WORK_TIME, workSec)
@@ -130,9 +147,7 @@ class MainViewModel : ViewModel() {
             putInt(KEY_REST_SEGMENT_TIME, restSegmentSec)
             putString(KEY_PERIOD, period.toString())
             putString(KEY_NOTIFICATION_FREQUENCY, notificationFrequency.toString())
-            val toJson = gson.toJson(periodHistory)
-            Log.d("TAG", "persistState: $toJson")
-            putString(KEY_PERIOD_HISTORY, toJson)
+            putString(KEY_PERIOD_HISTORY, gson.toJson(periodHistory))
         }.apply()
     }
 
@@ -143,6 +158,7 @@ class MainViewModel : ViewModel() {
         workSegmentSec = preferences.getInt(KEY_WORK_SEGMENT_TIME, 0)
         restSegmentSec = preferences.getInt(KEY_REST_SEGMENT_TIME, 0)
         periodHistory = gson.fromJson(preferences.getString(KEY_PERIOD_HISTORY, "[]"), periodHistoryItemType)
+        generateHistoryView()
         if (period.isRunning()) {
             //at this point there must be at least one item in the list
             val lastPeriodSwitch = periodHistory.last().timestamp
@@ -157,6 +173,14 @@ class MainViewModel : ViewModel() {
             timer.start { onTimerTick() }
         }
         notificationFrequency = NotificationFrequency.safeValueOf(preferences.getString(KEY_NOTIFICATION_FREQUENCY, ""))
+    }
+
+    private fun generateHistoryView() {
+        _historyState.value = LinkedList<PeriodHistoryViewItem>().apply {
+            for (i in 0 until periodHistory.size - 1) {
+                add(periodHistory[i].toViewItem(periodHistory[i + 1].timestamp))
+            }
+        }
     }
 
     private fun handleNotification() {
@@ -181,10 +205,29 @@ class MainViewModel : ViewModel() {
     data class PeriodHistoryItem(
         val timestamp: Long,
         val period: Period
+    ) {
+
+        fun toViewItem(nextPeriodStart: Long): PeriodHistoryViewItem {
+            return PeriodHistoryViewItem(
+                format.format(Date(timestamp)),
+                period.color,
+                TimeUnit.MILLISECONDS.toMinutes(nextPeriodStart - timestamp).toInt()
+            )
+        }
+
+        companion object {
+            private val format = SimpleDateFormat.getTimeInstance(DateFormat.SHORT)
+        }
+    }
+
+    data class PeriodHistoryViewItem(
+        val timestamp: String,
+        @ColorRes val color: Int,
+        val duration: Int
     )
 
-    enum class Period {
-        STOPPED, WORK, REST;
+    enum class Period(@ColorRes val color: Int) {
+        STOPPED(R.color.bg_default), WORK(R.color.bg_work), REST(R.color.bg_rest);
 
         companion object {
             fun safeValueOf(value: String?): Period {

@@ -8,4 +8,5 @@
     <string name="sound_1min">1 min</string>
     <string name="sound_5min">5 min</string>
     <string name="sound_muted">Muted</string>
+    <string name="history_item_text">%1$s - %2$d minutes</string>
 </resources>
