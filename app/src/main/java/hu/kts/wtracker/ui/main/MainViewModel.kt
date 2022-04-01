@@ -27,9 +27,8 @@ class MainViewModel : ViewModel() {
     private var restSec = 0
     private var workSegmentSec = 0
     private var restSegmentSec = 0
-    private var period = Period.WORK
+    private var period = Period.STOPPED
     private var lastPeriodSwitch = 0L
-    private var isRunning = false
     private var notificationFrequency = NotificationFrequency.MIN1
 
     init {
@@ -45,23 +44,23 @@ class MainViewModel : ViewModel() {
     }
 
     fun onStartButtonClicked() {
-        if (isRunning) {
+        if (period.isRunning()) {
             timer.stop()
+            period = Period.STOPPED
         } else {
             timer.start { onTimerTick() }
+            period = Period.WORK
         }
-        isRunning = !isRunning
         persistState()
         updateViewState()
     }
 
     fun onStartButtonLongClicked(): Boolean {
-        return if (!isRunning) {
+        return if (!period.isRunning()) {
             workSec = 0
             restSec = 0
             workSegmentSec = 0
             restSegmentSec = 0
-            period = Period.WORK
             persistState()
             updateViewState()
             true
@@ -77,12 +76,12 @@ class MainViewModel : ViewModel() {
     }
 
     fun onScreenTouch() {
-        if (isRunning) {
+        if (period.isRunning()) {
             if (period == Period.WORK) {
-                period =  Period.REST
+                period = Period.REST
                 restSegmentSec = 0
             } else {
-                period =  Period.WORK
+                period = Period.WORK
                 workSegmentSec = 0
             }
 
@@ -110,9 +109,8 @@ class MainViewModel : ViewModel() {
             restSec.toTimeString(),
             workSegmentSec.toTimeString(),
             restSegmentSec.toTimeString(),
-            context.getString(if (isRunning) R.string.stop else R.string.start),
+            context.getString(if (period.isRunning()) R.string.stop else R.string.start),
             period,
-            isRunning,
             notificationFrequency
         ))
     }
@@ -124,21 +122,19 @@ class MainViewModel : ViewModel() {
             putInt(KEY_WORK_SEGMENT_TIME, workSegmentSec)
             putInt(KEY_REST_SEGMENT_TIME, restSegmentSec)
             putLong(KEY_LAST_PERIOD_SWITCH, lastPeriodSwitch)
-            putBoolean(KEY_IS_RUNNING, isRunning)
             putString(KEY_PERIOD, period.toString())
             putString(KEY_NOTIFICATION_FREQUENCY, notificationFrequency.toString())
         }.apply()
     }
 
     private fun restoreState() {
-        isRunning = preferences.getBoolean(KEY_IS_RUNNING, false)
         period = Period.safeValueOf(preferences.getString(KEY_PERIOD, ""))
         workSec = preferences.getInt(KEY_WORK_TIME, 0)
         restSec = preferences.getInt(KEY_REST_TIME, 0)
         workSegmentSec = preferences.getInt(KEY_WORK_SEGMENT_TIME, 0)
         restSegmentSec = preferences.getInt(KEY_REST_SEGMENT_TIME, 0)
         lastPeriodSwitch = preferences.getLong(KEY_LAST_PERIOD_SWITCH, 0)
-        if (isRunning) {
+        if (period.isRunning()) {
             val elapsedSecs = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - lastPeriodSwitch).toInt()
             if (period == Period.WORK) {
                 workSec += elapsedSecs
@@ -169,21 +165,22 @@ class MainViewModel : ViewModel() {
                          val restSegment: String,
                          val buttonText: String,
                          val period: Period,
-                         val isRunning: Boolean,
                          val notificationFrequency: NotificationFrequency)
 
     enum class Period {
-        WORK, REST;
+        STOPPED, WORK, REST;
 
         companion object {
             fun safeValueOf(value: String?): Period {
                 return try {
                     valueOf(value ?: "")
                 } catch (e: IllegalArgumentException) {
-                    WORK
+                    STOPPED
                 }
             }
         }
+
+        fun isRunning() = this != STOPPED
     }
 
     enum class NotificationFrequency(val frequency: Int, @StringRes val label: Int) {
