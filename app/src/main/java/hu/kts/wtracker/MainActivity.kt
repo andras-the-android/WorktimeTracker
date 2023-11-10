@@ -1,39 +1,38 @@
 package hu.kts.wtracker
 
 import android.os.Bundle
+import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.core.view.WindowCompat
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import hu.kts.wtracker.databinding.ActivityMainBinding
-import hu.kts.wtracker.ui.main.HistoryFragment
-import hu.kts.wtracker.ui.main.MainFragment
+import androidx.lifecycle.ViewModelProvider
+import hu.kts.wtracker.ui.main.MainScreen
+import hu.kts.wtracker.ui.main.MainViewModel
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        binding.pager.adapter = MainPagerAdapter(this)
         WindowCompat.setDecorFitsSystemWindows(window, false)
-    }
 
-    private inner class MainPagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
-        override fun getItemCount(): Int = NUM_PAGES
+        setContent {
+            val viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
-        override fun createFragment(position: Int): Fragment {
-            return when (position) {
-                0 -> MainFragment()
-                else -> HistoryFragment()
+            val viewState = viewModel.state.observeAsState()
+
+            MaterialTheme {
+                viewState.value?.let { state ->
+                    MainScreen(
+                        state = state,
+                        onWorkClick = viewModel::onScreenTouch,
+                        onRestClick = viewModel::onScreenTouch,
+                        onStartButtonClick = viewModel::onStartButtonClicked,
+                        onFrequencyButtonClick = viewModel::onNotificationFrequencyButtonClicked
+                    )
+                }
             }
         }
-    }
-
-    companion object {
-        private const val NUM_PAGES = 2
     }
 }
