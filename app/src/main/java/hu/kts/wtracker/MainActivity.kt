@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
@@ -12,7 +14,7 @@ import hu.kts.wtracker.ui.main.MainViewModel
 
 class MainActivity : AppCompatActivity() {
 
-
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -29,7 +31,8 @@ class MainActivity : AppCompatActivity() {
                         onWorkClick = viewModel::onScreenTouch,
                         onRestClick = viewModel::onScreenTouch,
                         onStartButtonClick = viewModel::onStartButtonClicked,
-                        onFrequencyButtonClick = viewModel::onNotificationFrequencyButtonClicked
+                        onFrequencyButtonClick = viewModel::onNotificationFrequencyButtonClicked,
+                        windowSizeClass = calculateWindowSizeClass(this)
                     )
                 }
             }
