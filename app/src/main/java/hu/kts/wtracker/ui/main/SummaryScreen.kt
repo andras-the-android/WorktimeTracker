@@ -20,6 +20,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import hu.kts.wtracker.R
+import hu.kts.wtracker.ui.theme.WTrackerTheme
 
 enum class SummaryScreenDisplayMode {
     Horizontal, Vertical, Compact
@@ -160,7 +161,7 @@ private fun PreviewSummaryScreenCompact() {
 
 @Composable
 private fun PreviewSummaryScreen(displayMode: SummaryScreenDisplayMode) {
-    MaterialTheme {
+    WTrackerTheme(period = MainViewModel.Period.STOPPED) {
         SummaryScreen(
             state = MainViewModel.ViewState(
                 work = "0:00:00",
@@ -179,7 +180,7 @@ private fun PreviewSummaryScreen(displayMode: SummaryScreenDisplayMode) {
 @Preview
 @Composable
 private fun PreviewTimeSegment(@PreviewParameter(TimeSegmentProvider::class) compact: Boolean) {
-    MaterialTheme {
+    WTrackerTheme(period = MainViewModel.Period.STOPPED) {
         TimeSegment(
             label = "Work",
             primary = "0:00:00",
