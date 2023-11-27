@@ -83,7 +83,7 @@ private fun Buttons(
     onFrequencyButtonClick: () -> Unit
 ) {
     OutlinedButton(onClick = onStartButtonClick) {
-        Text(state.buttonText)
+        Text(state.stopResetText)
     }
     Spacer(modifier = Modifier.size(16.dp))
     OutlinedButton(onClick = onFrequencyButtonClick) {
@@ -168,7 +168,7 @@ private fun PreviewSummaryScreen(displayMode: SummaryScreenDisplayMode) {
                 rest = "0:00:00",
                 workSegment = "0:00:00",
                 restSegment = "0:00:00",
-                buttonText = "Start",
+                stopResetText = "Start",
                 period = MainViewModel.Period.STOPPED,
                 notificationFrequency = MainViewModel.NotificationFrequency.MIN1,
             ),

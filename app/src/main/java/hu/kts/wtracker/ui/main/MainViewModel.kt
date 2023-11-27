@@ -65,20 +65,19 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun onStartButtonClicked() {
+    fun onStopResetButtonClicked() {
         if (period.isRunning()) {
             timer.stop()
             period = Period.STOPPED
+            addToHistory(period)
+            persistState()
+            updateViewState()
         } else {
-            timer.start { onTimerTick() }
-            period = Period.WORK
+            reset()
         }
-        addToHistory(period)
-        persistState()
-        updateViewState()
     }
 
-    fun onStartButtonLongClicked(): Boolean {
+    fun reset(): Boolean {
         return if (!period.isRunning()) {
             workSec = 0
             restSec = 0
@@ -147,7 +146,7 @@ class MainViewModel : ViewModel() {
             restSec.toTimeString(),
             workSegmentSec.toTimeString(),
             restSegmentSec.toTimeString(),
-            context.getString(if (period.isRunning()) R.string.stop else R.string.start),
+            context.getString(if (period.isRunning()) R.string.stop else R.string.reset),
             period,
             notificationFrequency
         ))
@@ -222,7 +221,7 @@ class MainViewModel : ViewModel() {
                          val rest: String,
                          val workSegment: String,
                          val restSegment: String,
-                         val buttonText: String,
+                         val stopResetText: String,
                          val period: Period,
                          val notificationFrequency: NotificationFrequency)
 

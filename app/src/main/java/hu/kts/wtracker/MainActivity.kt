@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
                         state = state,
                         onWorkClick = viewModel::onWorkSegmentClick,
                         onRestClick = viewModel::onRestSegmentClick,
-                        onStartButtonClick = viewModel::onStartButtonClicked,
+                        onStartButtonClick = viewModel::onStopResetButtonClicked,
                         onFrequencyButtonClick = viewModel::onNotificationFrequencyButtonClicked,
                         windowSizeClass = calculateWindowSizeClass(this)
                     )
