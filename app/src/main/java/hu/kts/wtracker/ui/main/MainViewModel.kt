@@ -91,6 +91,15 @@ class MainViewModel : ViewModel() {
         cancelDialog()
     }
 
+    fun onSkipNotificationsButtonClick() {
+        dialog = DialogType.SkipNotifications
+        updateViewState()
+    }
+
+    fun skipNotificationFor(minutes: Int) {
+        cancelDialog()
+    }
+
     fun cancelDialog() {
         dialog = null
         updateViewState()
@@ -287,6 +296,6 @@ class MainViewModel : ViewModel() {
     }
 
     enum class DialogType {
-        Reset
+        Reset, SkipNotifications
     }
 }

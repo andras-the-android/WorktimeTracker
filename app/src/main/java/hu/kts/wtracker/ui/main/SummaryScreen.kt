@@ -29,10 +29,11 @@ enum class SummaryScreenDisplayMode {
 @Composable
 fun SummaryScreen(
     state: MainViewModel.ViewState,
-    onWorkClick: () -> Unit = {},
-    onRestClick: () -> Unit = {},
-    onStartButtonClick: () -> Unit = {},
-    onFrequencyButtonClick: () -> Unit = {},
+    onWorkClick: () -> Unit,
+    onRestClick: () -> Unit,
+    onStartButtonClick: () -> Unit,
+    onFrequencyButtonClick: () -> Unit,
+    onSkipNotificationsButtonClick: () -> Unit,
     displayMode: SummaryScreenDisplayMode
 ) {
     if (displayMode == SummaryScreenDisplayMode.Vertical) {
@@ -45,8 +46,10 @@ fun SummaryScreen(
         ) {
             TimeSegments(state, onWorkClick, onRestClick, false)
 
-            Column {
-                Buttons(onStartButtonClick, state, onFrequencyButtonClick)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Buttons(onStartButtonClick, state, onFrequencyButtonClick, onSkipNotificationsButtonClick)
             }
         }
     } else {
@@ -70,7 +73,7 @@ fun SummaryScreen(
             }
 
             Row {
-                Buttons(onStartButtonClick, state, onFrequencyButtonClick)
+                Buttons(onStartButtonClick, state, onFrequencyButtonClick, onSkipNotificationsButtonClick)
             }
         }
     }
@@ -80,14 +83,20 @@ fun SummaryScreen(
 private fun Buttons(
     onStartButtonClick: () -> Unit,
     state: MainViewModel.ViewState,
-    onFrequencyButtonClick: () -> Unit
+    onFrequencyButtonClick: () -> Unit,
+    onSkipNotificationsButtonClick: () -> Unit,
 ) {
+
     OutlinedButton(onClick = onStartButtonClick) {
         Text(state.stopResetText)
     }
     Spacer(modifier = Modifier.size(16.dp))
     OutlinedButton(onClick = onFrequencyButtonClick) {
         Text(stringResource(state.notificationFrequency.label))
+    }
+    Spacer(modifier = Modifier.size(16.dp))
+    OutlinedButton(onClick = onSkipNotificationsButtonClick) {
+        Text(stringResource(R.string.skip_notifications_button))
     }
 }
 
@@ -172,7 +181,12 @@ private fun PreviewSummaryScreen(displayMode: SummaryScreenDisplayMode) {
                 period = MainViewModel.Period.STOPPED,
                 notificationFrequency = MainViewModel.NotificationFrequency.MIN1,
             ),
-            displayMode = displayMode
+            displayMode = displayMode,
+            onFrequencyButtonClick = {},
+            onStartButtonClick = {},
+            onRestClick = {},
+            onWorkClick = {},
+            onSkipNotificationsButtonClick = {},
         )
     }
 }

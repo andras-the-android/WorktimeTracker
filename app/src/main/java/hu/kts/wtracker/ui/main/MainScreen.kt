@@ -22,6 +22,7 @@ fun MainScreen(
     onRestClick: () -> Unit = {},
     onStartButtonClick: () -> Unit = {},
     onFrequencyButtonClick: () -> Unit = {},
+    onSkipNotificationsButtonClick: () -> Unit,
     windowSizeClass: WindowSizeClass
 ) {
     val displayMode by remember(windowSizeClass) {
@@ -45,6 +46,7 @@ fun MainScreen(
                 onRestClick = onRestClick,
                 onStartButtonClick = onStartButtonClick,
                 onFrequencyButtonClick = onFrequencyButtonClick,
+                onSkipNotificationsButtonClick = onSkipNotificationsButtonClick,
                 displayMode = displayMode,
             )
         }

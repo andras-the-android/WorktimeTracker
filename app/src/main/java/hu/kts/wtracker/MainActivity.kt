@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import hu.kts.wtracker.ui.main.ConfirmResetDialog
 import hu.kts.wtracker.ui.main.MainScreen
 import hu.kts.wtracker.ui.main.MainViewModel
+import hu.kts.wtracker.ui.main.SkipNotificationsDialog
 import hu.kts.wtracker.ui.theme.WTrackerTheme
 
 class MainActivity : AppCompatActivity() {
@@ -33,6 +34,7 @@ class MainActivity : AppCompatActivity() {
                         onRestClick = viewModel::onRestSegmentClick,
                         onStartButtonClick = viewModel::onStopResetButtonClicked,
                         onFrequencyButtonClick = viewModel::onNotificationFrequencyButtonClicked,
+                        onSkipNotificationsButtonClick = viewModel::onSkipNotificationsButtonClick,
                         windowSizeClass = calculateWindowSizeClass(this)
                     )
 
@@ -40,8 +42,11 @@ class MainActivity : AppCompatActivity() {
                         MainViewModel.DialogType.Reset -> {
                             ConfirmResetDialog(
                                 onConfirm = viewModel::confirmReset,
-                                onDismiss = viewModel::cancelDialog
+                                onDismiss = viewModel::cancelDialog,
                             )
+                        }
+                        MainViewModel.DialogType.SkipNotifications -> {
+                            SkipNotificationsDialog(onSelect = viewModel::skipNotificationFor, onDismiss = viewModel::cancelDialog)
                         }
                         null -> {}
                     }
