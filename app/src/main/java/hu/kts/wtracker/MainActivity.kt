@@ -8,6 +8,7 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
+import hu.kts.wtracker.ui.main.ConfirmResetDialog
 import hu.kts.wtracker.ui.main.MainScreen
 import hu.kts.wtracker.ui.main.MainViewModel
 import hu.kts.wtracker.ui.theme.WTrackerTheme
@@ -34,6 +35,16 @@ class MainActivity : AppCompatActivity() {
                         onFrequencyButtonClick = viewModel::onNotificationFrequencyButtonClicked,
                         windowSizeClass = calculateWindowSizeClass(this)
                     )
+
+                    when (state.dialog) {
+                        MainViewModel.DialogType.Reset -> {
+                            ConfirmResetDialog(
+                                onConfirm = viewModel::confirmReset,
+                                onDismiss = viewModel::cancelDialog
+                            )
+                        }
+                        null -> {}
+                    }
                 }
             }
         }

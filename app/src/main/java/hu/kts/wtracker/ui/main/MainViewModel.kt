@@ -52,6 +52,7 @@ class MainViewModel : ViewModel() {
     private var period = Period.STOPPED
     private var notificationFrequency = NotificationFrequency.MIN1
     private var periodHistory = ArrayList<PeriodHistoryItem>()
+    private var dialog: DialogType? = null
 
     init {
         restoreState()
@@ -70,27 +71,29 @@ class MainViewModel : ViewModel() {
             timer.stop()
             period = Period.STOPPED
             addToHistory(period)
-            persistState()
-            updateViewState()
         } else {
-            reset()
+            dialog = DialogType.Reset
         }
+        persistState()
+        updateViewState()
     }
 
-    fun reset(): Boolean {
-        return if (!period.isRunning()) {
-            workSec = 0
-            restSec = 0
-            workSegmentSec = 0
-            restSegmentSec = 0
-            periodHistory = arrayListOf()
-            _historyState.value = LinkedList<PeriodHistoryViewItem>()
-            persistState()
-            updateViewState()
-            true
-        } else {
-            false
-        }
+    fun confirmReset() {
+        assert(!period.isRunning())
+        workSec = 0
+        restSec = 0
+        workSegmentSec = 0
+        restSegmentSec = 0
+        periodHistory = arrayListOf()
+        _historyState.value = LinkedList<PeriodHistoryViewItem>()
+        persistState()
+        updateViewState()
+        cancelDialog()
+    }
+
+    fun cancelDialog() {
+        dialog = null
+        updateViewState()
     }
 
     fun onNotificationFrequencyButtonClicked() {
@@ -148,7 +151,8 @@ class MainViewModel : ViewModel() {
             restSegmentSec.toTimeString(),
             context.getString(if (period.isRunning()) R.string.stop else R.string.reset),
             period,
-            notificationFrequency
+            notificationFrequency,
+            dialog
         ))
     }
 
@@ -217,13 +221,16 @@ class MainViewModel : ViewModel() {
 
     private fun Int.isWholeMinute() = this % 60 == 0
 
-    data class ViewState(val work: String,
-                         val rest: String,
-                         val workSegment: String,
-                         val restSegment: String,
-                         val stopResetText: String,
-                         val period: Period,
-                         val notificationFrequency: NotificationFrequency)
+    data class ViewState(
+        val work: String,
+        val rest: String,
+        val workSegment: String,
+        val restSegment: String,
+        val stopResetText: String,
+        val period: Period,
+        val notificationFrequency: NotificationFrequency,
+        val dialog: DialogType? = null,
+    )
 
     data class PeriodHistoryItem(
         val timestamp: Long,
@@ -277,5 +284,9 @@ class MainViewModel : ViewModel() {
                 }
             }
         }
+    }
+
+    enum class DialogType {
+        Reset
     }
 }

@@ -24,7 +24,7 @@ private fun MainViewModel.Period.getComposeColor(): Color {
 
 @Composable
 fun WTrackerTheme(
-    period: MainViewModel.Period,
+    period: MainViewModel.Period = MainViewModel.Period.STOPPED,
     content: @Composable () -> Unit,
 ) {
     MaterialTheme(
