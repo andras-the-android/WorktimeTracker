@@ -28,8 +28,8 @@ class MainActivity : AppCompatActivity() {
                 viewState.value?.let { state ->
                     MainScreen(
                         state = state,
-                        onWorkClick = viewModel::onScreenTouch,
-                        onRestClick = viewModel::onScreenTouch,
+                        onWorkClick = viewModel::onWorkSegmentClick,
+                        onRestClick = viewModel::onRestSegmentClick,
                         onStartButtonClick = viewModel::onStartButtonClicked,
                         onFrequencyButtonClick = viewModel::onNotificationFrequencyButtonClicked,
                         windowSizeClass = calculateWindowSizeClass(this)

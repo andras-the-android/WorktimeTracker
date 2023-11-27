@@ -10,11 +10,22 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import hu.kts.wtracker.*
+import hu.kts.wtracker.KEY_NOTIFICATION_FREQUENCY
+import hu.kts.wtracker.KEY_PERIOD
+import hu.kts.wtracker.KEY_PERIOD_HISTORY
+import hu.kts.wtracker.KEY_REST_SEGMENT_TIME
+import hu.kts.wtracker.KEY_REST_TIME
+import hu.kts.wtracker.KEY_WORK_SEGMENT_TIME
+import hu.kts.wtracker.KEY_WORK_TIME
+import hu.kts.wtracker.R
 import hu.kts.wtracker.Timer
+import hu.kts.wtracker.WTrackerApp
+import hu.kts.wtracker.next
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.LinkedList
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class MainViewModel : ViewModel() {
@@ -89,7 +100,16 @@ class MainViewModel : ViewModel() {
         updateViewState()
     }
 
-    fun onScreenTouch() {
+    fun onWorkSegmentClick() {
+        onTimeSegmentClick(Period.WORK)
+    }
+
+    fun onRestSegmentClick() {
+        onTimeSegmentClick(Period.REST)
+    }
+
+    private fun onTimeSegmentClick(initialPeriod: Period) {
+        // if it's already running, switch to the other one regardless which timer was clicked
         if (period.isRunning()) {
             if (period == Period.WORK) {
                 period = Period.REST
@@ -98,11 +118,15 @@ class MainViewModel : ViewModel() {
                 period = Period.WORK
                 workSegmentSec = 0
             }
-
-            addToHistory(period)
-            persistState()
-            updateViewState()
+        // set the initial value if it's not running
+        } else {
+            timer.start { onTimerTick() }
+            period = initialPeriod
         }
+
+        addToHistory(period)
+        persistState()
+        updateViewState()
     }
 
     private fun onTimerTick() {
