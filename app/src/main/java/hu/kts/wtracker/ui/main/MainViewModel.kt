@@ -11,12 +11,7 @@ import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import hu.kts.wtracker.KEY_NOTIFICATION_FREQUENCY
-import hu.kts.wtracker.KEY_PERIOD
 import hu.kts.wtracker.KEY_PERIOD_HISTORY
-import hu.kts.wtracker.KEY_REST_SEGMENT_TIME
-import hu.kts.wtracker.KEY_REST_TIME
-import hu.kts.wtracker.KEY_WORK_SEGMENT_TIME
-import hu.kts.wtracker.KEY_WORK_TIME
 import hu.kts.wtracker.R
 import hu.kts.wtracker.Timer
 import hu.kts.wtracker.WTrackerApp
@@ -76,7 +71,6 @@ class MainViewModel : ViewModel() {
         } else {
             dialog = DialogType.Reset
         }
-        persistState()
         updateViewState()
     }
 
@@ -109,7 +103,9 @@ class MainViewModel : ViewModel() {
 
     fun onNotificationFrequencyButtonClicked() {
         notificationFrequency = notificationFrequency.next()
-        persistState()
+        preferences.edit().apply {
+            putString(KEY_NOTIFICATION_FREQUENCY, notificationFrequency.toString())
+        }.apply()
         updateViewState()
     }
 
@@ -138,7 +134,6 @@ class MainViewModel : ViewModel() {
         }
 
         addToHistory(period)
-        persistState()
         updateViewState()
     }
 
@@ -174,43 +169,57 @@ class MainViewModel : ViewModel() {
         if (periodHistory.isNotEmpty()) {
             _historyState.value = _historyState.value?.apply { add(periodHistory.last().toViewItem(newItem.timestamp)) }
         }
+        periodHistory.lastOrNull()?.calcDuration(newItem.timestamp)
         periodHistory.add(newItem)
+        persistState()
     }
 
     private fun persistState() {
         preferences.edit().apply {
-            putInt(KEY_WORK_TIME, workSec)
-            putInt(KEY_REST_TIME, restSec)
-            putInt(KEY_WORK_SEGMENT_TIME, workSegmentSec)
-            putInt(KEY_REST_SEGMENT_TIME, restSegmentSec)
-            putString(KEY_PERIOD, period.toString())
-            putString(KEY_NOTIFICATION_FREQUENCY, notificationFrequency.toString())
             putString(KEY_PERIOD_HISTORY, gson.toJson(periodHistory))
         }.apply()
     }
 
     private fun restoreState() {
-        period = Period.safeValueOf(preferences.getString(KEY_PERIOD, ""))
-        workSec = preferences.getInt(KEY_WORK_TIME, 0)
-        restSec = preferences.getInt(KEY_REST_TIME, 0)
-        workSegmentSec = preferences.getInt(KEY_WORK_SEGMENT_TIME, 0)
-        restSegmentSec = preferences.getInt(KEY_REST_SEGMENT_TIME, 0)
         periodHistory = gson.fromJson(preferences.getString(KEY_PERIOD_HISTORY, "[]"), periodHistoryItemType)
-        generateHistoryView()
-        if (period.isRunning()) {
-            //at this point there must be at least one item in the list
-            val lastPeriodSwitch = periodHistory.last().timestamp
-            val elapsedSecs = TimeUnit.MILLISECONDS.toSeconds(clock.millis() - lastPeriodSwitch).toInt()
-            if (period == Period.WORK) {
-                workSec += elapsedSecs
-                workSegmentSec = elapsedSecs
-            } else {
-                restSec += elapsedSecs
-                restSegmentSec = elapsedSecs
+        if (periodHistory.isEmpty()) return // nothing to restore
+
+        period = periodHistory.last().period
+
+        periodHistory.forEachIndexed { index, item ->
+            if (index < periodHistory.size - 1) {
+                item.calcDuration(periodHistory[index + 1].timestamp)
             }
+            when (item.period) {
+                Period.WORK -> {
+                    workSegmentSec = item.getOngoingDuration()
+                    workSec += workSegmentSec
+                }
+                Period.REST -> {
+                    restSegmentSec = item.getOngoingDuration()
+                    restSec += restSegmentSec
+                }
+                else -> {}
+            }
+        }
+
+        if (period.isRunning()) {
             timer.start { onTimerTick() }
         }
+
+        generateHistoryView()
         notificationFrequency = NotificationFrequency.safeValueOf(preferences.getString(KEY_NOTIFICATION_FREQUENCY, ""))
+    }
+
+    /**
+     * Returns the duration of a period even if it's not finished yet
+     */
+    private fun PeriodHistoryItem.getOngoingDuration(): Int {
+        return if (durationSeconds == 0) {
+            TimeUnit.MILLISECONDS.toSeconds(clock.millis() - timestamp).toInt()
+        } else {
+            durationSeconds
+        }
     }
 
     private fun generateHistoryView() {
@@ -248,12 +257,19 @@ class MainViewModel : ViewModel() {
         val period: Period
     ) {
 
+        var durationSeconds = 0
+        private set
+
         fun toViewItem(nextPeriodStart: Long): PeriodHistoryViewItem {
             return PeriodHistoryViewItem(
                 format.format(Date(timestamp)),
                 period.color,
                 TimeUnit.MILLISECONDS.toMinutes(nextPeriodStart - timestamp).toInt()
             )
+        }
+
+        fun calcDuration(nextPeriodStart: Long) {
+            durationSeconds = TimeUnit.MILLISECONDS.toSeconds(nextPeriodStart - timestamp).toInt()
         }
 
         companion object {
