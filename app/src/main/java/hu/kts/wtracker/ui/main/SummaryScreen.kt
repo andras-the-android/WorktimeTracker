@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -20,6 +21,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import hu.kts.wtracker.R
+import hu.kts.wtracker.ui.theme.Grey
 import hu.kts.wtracker.ui.theme.WTrackerTheme
 
 enum class SummaryScreenDisplayMode {
@@ -86,16 +88,16 @@ private fun Buttons(
     onFrequencyButtonClick: () -> Unit,
     onSkipNotificationsButtonClick: () -> Unit,
 ) {
-
-    OutlinedButton(onClick = onStartButtonClick) {
+    val buttonColors = ButtonDefaults.outlinedButtonColors(contentColor = Grey)
+    OutlinedButton(onClick = onStartButtonClick, colors = buttonColors) {
         Text(state.stopResetText)
     }
     Spacer(modifier = Modifier.size(16.dp))
-    OutlinedButton(onClick = onFrequencyButtonClick) {
+    OutlinedButton(onClick = onFrequencyButtonClick, colors = buttonColors) {
         Text(stringResource(state.notificationFrequency.label))
     }
     Spacer(modifier = Modifier.size(16.dp))
-    OutlinedButton(onClick = onSkipNotificationsButtonClick) {
+    OutlinedButton(onClick = onSkipNotificationsButtonClick, colors = buttonColors) {
         Text(stringResource(R.string.skip_notifications_button))
     }
 }
