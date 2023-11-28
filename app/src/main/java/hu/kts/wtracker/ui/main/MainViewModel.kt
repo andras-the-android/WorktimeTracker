@@ -23,6 +23,7 @@ import hu.kts.wtracker.WTrackerApp
 import hu.kts.wtracker.next
 import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.time.Clock
 import java.util.Date
 import java.util.LinkedList
 import java.util.Locale
@@ -44,6 +45,7 @@ class MainViewModel : ViewModel() {
     private lateinit var textToSpeech: TextToSpeech
     private val gson = Gson()
     private val periodHistoryItemType = object : TypeToken<ArrayList<PeriodHistoryItem>>() {}.type
+    private val clock = Clock.systemDefaultZone()
 
     private var workSec = 0
     private var restSec = 0
@@ -166,7 +168,7 @@ class MainViewModel : ViewModel() {
     }
 
     private fun addToHistory(period: Period) {
-        val newItem = PeriodHistoryItem(System.currentTimeMillis(), period)
+        val newItem = PeriodHistoryItem(clock.millis(), period)
         //This may seems weird at first but we always show the finished items in the history view.
         //So the history view will always contain periodHistory.size - 1 elements
         if (periodHistory.isNotEmpty()) {
@@ -198,7 +200,7 @@ class MainViewModel : ViewModel() {
         if (period.isRunning()) {
             //at this point there must be at least one item in the list
             val lastPeriodSwitch = periodHistory.last().timestamp
-            val elapsedSecs = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - lastPeriodSwitch).toInt()
+            val elapsedSecs = TimeUnit.MILLISECONDS.toSeconds(clock.millis() - lastPeriodSwitch).toInt()
             if (period == Period.WORK) {
                 workSec += elapsedSecs
                 workSegmentSec = elapsedSecs
