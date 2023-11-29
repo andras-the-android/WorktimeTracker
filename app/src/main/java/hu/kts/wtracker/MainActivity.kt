@@ -1,6 +1,7 @@
 package hu.kts.wtracker
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
@@ -28,6 +29,9 @@ class MainActivity : AppCompatActivity() {
 
             WTrackerTheme(viewState.value?.period ?: MainViewModel.Period.STOPPED) {
                 viewState.value?.let { state ->
+
+                    keepScreenAwake(state.period.isRunning())
+
                     MainScreen(
                         state = state,
                         onWorkClick = viewModel::onWorkSegmentClick,
@@ -52,6 +56,14 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+        }
+    }
+
+    private fun keepScreenAwake(keep: Boolean) {
+        if (keep) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 }
