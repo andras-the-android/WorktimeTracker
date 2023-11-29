@@ -55,7 +55,7 @@ fun SummaryScreen(
             }
         }
     } else {
-        Column (
+        Column(
             modifier = Modifier
                 .fillMaxSize(),
             verticalArrangement = Arrangement.SpaceEvenly,
@@ -97,8 +97,12 @@ private fun Buttons(
         Text(stringResource(state.notificationFrequency.label))
     }
     Spacer(modifier = Modifier.size(16.dp))
-    OutlinedButton(onClick = onSkipNotificationsButtonClick, colors = buttonColors) {
-        Text(stringResource(R.string.skip_notifications_button))
+    OutlinedButton(
+        onClick = onSkipNotificationsButtonClick,
+        colors = buttonColors,
+        enabled = state.period == MainViewModel.Period.REST
+    ) {
+        Text(state.skipNotificationTimeLeft ?: stringResource(R.string.skip_notifications_button))
     }
 }
 
@@ -182,6 +186,8 @@ private fun PreviewSummaryScreen(displayMode: SummaryScreenDisplayMode) {
                 stopResetText = "Start",
                 period = MainViewModel.Period.STOPPED,
                 notificationFrequency = MainViewModel.NotificationFrequency.MIN1,
+                null,
+                null,
             ),
             displayMode = displayMode,
             onFrequencyButtonClick = {},
@@ -206,6 +212,6 @@ private fun PreviewTimeSegment(@PreviewParameter(TimeSegmentProvider::class) com
     }
 }
 
-class TimeSegmentProvider: PreviewParameterProvider<Boolean> {
+class TimeSegmentProvider : PreviewParameterProvider<Boolean> {
     override val values = sequenceOf(false, true)
 }
