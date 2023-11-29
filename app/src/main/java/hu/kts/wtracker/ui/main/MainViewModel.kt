@@ -26,6 +26,7 @@ import java.util.Date
 import java.util.LinkedList
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import kotlin.math.roundToInt
 
 class MainViewModel : ViewModel() {
 
@@ -177,13 +178,19 @@ class MainViewModel : ViewModel() {
             period,
             notificationFrequency,
             dialog,
-            calcSkipNotificationsButtonText()
+            calcSkipNotificationsButtonText(),
+            calcEfficiency(),
         ))
     }
 
     private fun calcSkipNotificationsButtonText(): String? {
         if (skipNotificationsUntil <= clock.millis()) return null
         return mmHhFormat.format(Date(skipNotificationsUntil - clock.millis()))
+    }
+
+    private fun calcEfficiency(): Int {
+        if (workSec == 0) return 0 // avoid divide by zero
+        return (workSec.toFloat() / (workSec + restSec) * 100).roundToInt()
     }
 
     private fun addToHistory(period: Period) {
@@ -281,6 +288,7 @@ class MainViewModel : ViewModel() {
         val notificationFrequency: NotificationFrequency,
         val dialog: DialogType? = null,
         val skipNotificationTimeLeft: String?,
+        val efficiency: Int,
     )
 
     data class PeriodHistoryItem(

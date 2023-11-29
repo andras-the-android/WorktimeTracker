@@ -46,6 +46,7 @@ fun SummaryScreen(
             horizontalAlignment = Alignment.CenterHorizontally
 
         ) {
+            EfficiencyText(state = state)
             TimeSegments(state, onWorkClick, onRestClick, false)
 
             Column(
@@ -61,6 +62,9 @@ fun SummaryScreen(
             verticalArrangement = Arrangement.SpaceEvenly,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            if (displayMode != SummaryScreenDisplayMode.Compact) {
+                EfficiencyText(state = state)
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -79,6 +83,16 @@ fun SummaryScreen(
             }
         }
     }
+}
+
+@Composable
+fun EfficiencyText(
+    state: MainViewModel.ViewState,
+) {
+    Text(
+        text = stringResource(id = R.string.efficiency, state.efficiency),
+        style = MaterialTheme.typography.headlineSmall
+    )
 }
 
 @Composable
@@ -186,8 +200,9 @@ private fun PreviewSummaryScreen(displayMode: SummaryScreenDisplayMode) {
                 stopResetText = "Start",
                 period = MainViewModel.Period.STOPPED,
                 notificationFrequency = MainViewModel.NotificationFrequency.MIN1,
-                null,
-                null,
+                dialog = null,
+                skipNotificationTimeLeft = null,
+                efficiency = 95,
             ),
             displayMode = displayMode,
             onFrequencyButtonClick = {},

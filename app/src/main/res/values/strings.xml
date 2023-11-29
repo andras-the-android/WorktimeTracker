@@ -17,4 +17,5 @@
     <string name="minutes">%1$d minutes</string>
     <string name="skip_notifications_button">Skip</string>
     <string name="skip_notifications_dialog_title">Skip notifications for:</string>
+    <string name="efficiency">Efficiency: %1$d%%</string>
 </resources>
