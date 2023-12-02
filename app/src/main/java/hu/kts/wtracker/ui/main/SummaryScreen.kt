@@ -34,7 +34,6 @@ fun SummaryScreen(
     onWorkClick: () -> Unit,
     onRestClick: () -> Unit,
     onStartButtonClick: () -> Unit,
-    onFrequencyButtonClick: () -> Unit,
     onSkipNotificationsButtonClick: () -> Unit,
     displayMode: SummaryScreenDisplayMode
 ) {
@@ -52,7 +51,7 @@ fun SummaryScreen(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Buttons(onStartButtonClick, state, onFrequencyButtonClick, onSkipNotificationsButtonClick)
+                Buttons(onStartButtonClick, state, onSkipNotificationsButtonClick)
             }
         }
     } else {
@@ -79,7 +78,7 @@ fun SummaryScreen(
             }
 
             Row {
-                Buttons(onStartButtonClick, state, onFrequencyButtonClick, onSkipNotificationsButtonClick)
+                Buttons(onStartButtonClick, state, onSkipNotificationsButtonClick)
             }
         }
     }
@@ -99,16 +98,11 @@ fun EfficiencyText(
 private fun Buttons(
     onStartButtonClick: () -> Unit,
     state: MainViewModel.ViewState,
-    onFrequencyButtonClick: () -> Unit,
     onSkipNotificationsButtonClick: () -> Unit,
 ) {
     val buttonColors = ButtonDefaults.outlinedButtonColors(contentColor = Grey)
     OutlinedButton(onClick = onStartButtonClick, colors = buttonColors) {
         Text(state.stopResetText)
-    }
-    Spacer(modifier = Modifier.size(16.dp))
-    OutlinedButton(onClick = onFrequencyButtonClick, colors = buttonColors) {
-        Text(stringResource(state.notificationFrequency.label))
     }
     Spacer(modifier = Modifier.size(16.dp))
     OutlinedButton(
@@ -199,13 +193,11 @@ private fun PreviewSummaryScreen(displayMode: SummaryScreenDisplayMode) {
                 restSegment = "0:00:00",
                 stopResetText = "Start",
                 period = MainViewModel.Period.STOPPED,
-                notificationFrequency = MainViewModel.NotificationFrequency.MIN1,
                 dialog = null,
                 skipNotificationTimeLeft = null,
                 efficiency = 95,
             ),
             displayMode = displayMode,
-            onFrequencyButtonClick = {},
             onStartButtonClick = {},
             onRestClick = {},
             onWorkClick = {},

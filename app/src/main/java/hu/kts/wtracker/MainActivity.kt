@@ -37,7 +37,6 @@ class MainActivity : ComponentActivity() {
                         onWorkClick = viewModel::onWorkSegmentClick,
                         onRestClick = viewModel::onRestSegmentClick,
                         onStartButtonClick = viewModel::onStopResetButtonClicked,
-                        onFrequencyButtonClick = viewModel::onNotificationFrequencyButtonClicked,
                         onSkipNotificationsButtonClick = viewModel::onSkipNotificationsButtonClick,
                         windowSizeClass = calculateWindowSizeClass(this)
                     )

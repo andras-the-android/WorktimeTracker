@@ -4,19 +4,16 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.widget.Toast
-import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import hu.kts.wtracker.KEY_NOTIFICATION_FREQUENCY
 import hu.kts.wtracker.KEY_PERIOD_HISTORY
 import hu.kts.wtracker.KEY_SKIP_NOTIFICATIONS_UNTIL
 import hu.kts.wtracker.R
 import hu.kts.wtracker.Timer
 import hu.kts.wtracker.WTrackerApp
-import hu.kts.wtracker.next
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.time.Clock
@@ -45,7 +42,6 @@ class MainViewModel : ViewModel() {
     private var workSegmentSec = 0
     private var restSegmentSec = 0
     private var period = Period.STOPPED
-    private var notificationFrequency = NotificationFrequency.MIN1
     private var periodHistory = ArrayList<PeriodHistoryItem>()
     private var dialog: DialogType? = null
     private var skipNotificationsUntil = 0L
@@ -112,14 +108,6 @@ class MainViewModel : ViewModel() {
         updateViewState()
     }
 
-    fun onNotificationFrequencyButtonClicked() {
-        notificationFrequency = notificationFrequency.next()
-        preferences.edit().apply {
-            putString(KEY_NOTIFICATION_FREQUENCY, notificationFrequency.toString())
-        }.apply()
-        updateViewState()
-    }
-
     fun onWorkSegmentClick() {
         onTimeSegmentClick(Period.WORK)
     }
@@ -169,7 +157,6 @@ class MainViewModel : ViewModel() {
             restSegmentSec.toTimeString(),
             context.getString(if (period.isRunning()) R.string.stop else R.string.reset),
             period,
-            notificationFrequency,
             dialog,
             calcSkipNotificationsButtonText(),
             calcEfficiency(),
@@ -223,7 +210,6 @@ class MainViewModel : ViewModel() {
             timer.start { onTimerTick() }
         }
 
-        notificationFrequency = NotificationFrequency.safeValueOf(preferences.getString(KEY_NOTIFICATION_FREQUENCY, ""))
         skipNotificationsUntil = preferences.getLong(KEY_SKIP_NOTIFICATIONS_UNTIL, 0L)
     }
 
@@ -239,9 +225,9 @@ class MainViewModel : ViewModel() {
     }
 
     private fun handleNotification() {
-        if (period == Period.REST && notificationFrequency != NotificationFrequency.MUTED && restSegmentSec.isWholeMinute()) {
-            val minutes = TimeUnit.SECONDS.toMinutes(restSegmentSec.toLong()).toInt()
-            if (minutes % notificationFrequency.frequency == 0 && clock.millis() > skipNotificationsUntil) {
+        if (period == Period.REST && restSegmentSec.isWholeMinute()) {
+            if (clock.millis() > skipNotificationsUntil) {
+                val minutes = TimeUnit.SECONDS.toMinutes(restSegmentSec.toLong()).toInt()
                 textToSpeech.speak("$minutes minutes", TextToSpeech.QUEUE_FLUSH, null, null)
             }
         }
@@ -261,7 +247,6 @@ class MainViewModel : ViewModel() {
         val restSegment: String,
         val stopResetText: String,
         val period: Period,
-        val notificationFrequency: NotificationFrequency,
         val dialog: DialogType? = null,
         val skipNotificationTimeLeft: String?,
         val efficiency: Int,
@@ -288,20 +273,6 @@ class MainViewModel : ViewModel() {
         STOPPED, WORK, REST;
 
         fun isRunning() = this != STOPPED
-    }
-
-    enum class NotificationFrequency(val frequency: Int, @StringRes val label: Int) {
-        MIN1(1, R.string.sound_1min), MIN5(5, R.string.sound_5min), MUTED(0, R.string.sound_muted);
-
-        companion object {
-            fun safeValueOf(value: String?): NotificationFrequency {
-                return try {
-                    valueOf(value ?: "")
-                } catch (e: IllegalArgumentException) {
-                    MIN1
-                }
-            }
-        }
     }
 
     enum class DialogType {

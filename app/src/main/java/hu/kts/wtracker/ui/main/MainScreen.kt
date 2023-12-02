@@ -21,7 +21,6 @@ fun MainScreen(
     onWorkClick: () -> Unit = {},
     onRestClick: () -> Unit = {},
     onStartButtonClick: () -> Unit = {},
-    onFrequencyButtonClick: () -> Unit = {},
     onSkipNotificationsButtonClick: () -> Unit,
     windowSizeClass: WindowSizeClass
 ) {
@@ -45,7 +44,6 @@ fun MainScreen(
                 onWorkClick = onWorkClick,
                 onRestClick = onRestClick,
                 onStartButtonClick = onStartButtonClick,
-                onFrequencyButtonClick = onFrequencyButtonClick,
                 onSkipNotificationsButtonClick = onSkipNotificationsButtonClick,
                 displayMode = displayMode,
             )
