@@ -14,10 +14,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import hu.kts.wtracker.data.SummaryViewState
+import hu.kts.wtracker.ui.summary.SummaryScreen
+import hu.kts.wtracker.ui.summary.SummaryScreenDisplayMode
 
 @Composable
 fun MainScreen(
-    state: MainViewModel.ViewState,
+    state: SummaryViewState,
     onWorkClick: () -> Unit = {},
     onRestClick: () -> Unit = {},
     onStartButtonClick: () -> Unit = {},

@@ -4,7 +4,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import hu.kts.wtracker.ui.main.MainViewModel
+import hu.kts.wtracker.data.Period
 
 private val colorsWork = lightColorScheme(
     primary = work_theme_light_primary,
@@ -75,17 +75,17 @@ private val colorsRest = lightColorScheme(
     scrim = rest_theme_light_scrim,
 )
 
-private fun MainViewModel.Period.getColorScheme(): ColorScheme {
+private fun Period.getColorScheme(): ColorScheme {
     return when (this) {
-        MainViewModel.Period.STOPPED -> colorsStopped
-        MainViewModel.Period.WORK -> colorsWork
-        MainViewModel.Period.REST -> colorsRest
+        Period.STOPPED -> colorsStopped
+        Period.WORK -> colorsWork
+        Period.REST -> colorsRest
     }
 }
 
 @Composable
 fun WTrackerTheme(
-    period: MainViewModel.Period = MainViewModel.Period.STOPPED,
+    period: Period = Period.STOPPED,
     content: @Composable () -> Unit,
 ) {
     MaterialTheme(

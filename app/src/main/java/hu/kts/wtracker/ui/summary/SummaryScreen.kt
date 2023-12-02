@@ -1,4 +1,4 @@
-package hu.kts.wtracker.ui.main
+package hu.kts.wtracker.ui.summary
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +21,8 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import hu.kts.wtracker.R
+import hu.kts.wtracker.data.Period
+import hu.kts.wtracker.data.SummaryViewState
 import hu.kts.wtracker.ui.theme.Grey
 import hu.kts.wtracker.ui.theme.WTrackerTheme
 
@@ -30,7 +32,7 @@ enum class SummaryScreenDisplayMode {
 
 @Composable
 fun SummaryScreen(
-    state: MainViewModel.ViewState,
+    state: SummaryViewState,
     onWorkClick: () -> Unit,
     onRestClick: () -> Unit,
     onStartButtonClick: () -> Unit,
@@ -86,7 +88,7 @@ fun SummaryScreen(
 
 @Composable
 fun EfficiencyText(
-    state: MainViewModel.ViewState,
+    state: SummaryViewState,
 ) {
     Text(
         text = stringResource(id = R.string.efficiency, state.efficiency),
@@ -97,7 +99,7 @@ fun EfficiencyText(
 @Composable
 private fun Buttons(
     onStartButtonClick: () -> Unit,
-    state: MainViewModel.ViewState,
+    state: SummaryViewState,
     onSkipNotificationsButtonClick: () -> Unit,
 ) {
     val buttonColors = ButtonDefaults.outlinedButtonColors(contentColor = Grey)
@@ -108,7 +110,7 @@ private fun Buttons(
     OutlinedButton(
         onClick = onSkipNotificationsButtonClick,
         colors = buttonColors,
-        enabled = state.period == MainViewModel.Period.REST
+        enabled = state.period == Period.REST
     ) {
         Text(state.skipNotificationTimeLeft ?: stringResource(R.string.skip_notifications_button))
     }
@@ -116,7 +118,7 @@ private fun Buttons(
 
 @Composable
 private fun TimeSegments(
-    state: MainViewModel.ViewState,
+    state: SummaryViewState,
     onWorkClick: () -> Unit,
     onRestClick: () -> Unit,
     compact: Boolean,
@@ -184,15 +186,15 @@ private fun PreviewSummaryScreenCompact() {
 
 @Composable
 private fun PreviewSummaryScreen(displayMode: SummaryScreenDisplayMode) {
-    WTrackerTheme(period = MainViewModel.Period.STOPPED) {
+    WTrackerTheme(period = Period.STOPPED) {
         SummaryScreen(
-            state = MainViewModel.ViewState(
+            state = SummaryViewState(
                 work = "0:00:00",
                 rest = "0:00:00",
                 workSegment = "0:00:00",
                 restSegment = "0:00:00",
                 stopResetText = "Start",
-                period = MainViewModel.Period.STOPPED,
+                period = Period.STOPPED,
                 dialog = null,
                 skipNotificationTimeLeft = null,
                 efficiency = 95,
@@ -209,7 +211,7 @@ private fun PreviewSummaryScreen(displayMode: SummaryScreenDisplayMode) {
 @Preview
 @Composable
 private fun PreviewTimeSegment(@PreviewParameter(TimeSegmentProvider::class) compact: Boolean) {
-    WTrackerTheme(period = MainViewModel.Period.STOPPED) {
+    WTrackerTheme(period = Period.STOPPED) {
         TimeSegment(
             label = "Work",
             primary = "0:00:00",

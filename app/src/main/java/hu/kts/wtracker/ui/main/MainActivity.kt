@@ -1,4 +1,4 @@
-package hu.kts.wtracker
+package hu.kts.wtracker.ui.main
 
 import android.os.Bundle
 import android.view.WindowManager
@@ -9,10 +9,8 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
-import hu.kts.wtracker.ui.main.ConfirmResetDialog
-import hu.kts.wtracker.ui.main.MainScreen
-import hu.kts.wtracker.ui.main.MainViewModel
-import hu.kts.wtracker.ui.main.SkipNotificationsDialog
+import hu.kts.wtracker.data.Period
+import hu.kts.wtracker.data.SummaryViewState
 import hu.kts.wtracker.ui.theme.WTrackerTheme
 
 class MainActivity : ComponentActivity() {
@@ -27,7 +25,7 @@ class MainActivity : ComponentActivity() {
 
             val viewState = viewModel.state.observeAsState()
 
-            WTrackerTheme(viewState.value?.period ?: MainViewModel.Period.STOPPED) {
+            WTrackerTheme(viewState.value?.period ?: Period.STOPPED) {
                 viewState.value?.let { state ->
 
                     keepScreenAwake(state.period.isRunning())
@@ -42,13 +40,13 @@ class MainActivity : ComponentActivity() {
                     )
 
                     when (state.dialog) {
-                        MainViewModel.DialogType.Reset -> {
+                        SummaryViewState.DialogType.Reset -> {
                             ConfirmResetDialog(
                                 onConfirm = viewModel::confirmReset,
                                 onDismiss = viewModel::cancelDialog,
                             )
                         }
-                        MainViewModel.DialogType.SkipNotifications -> {
+                        SummaryViewState.DialogType.SkipNotifications -> {
                             SkipNotificationsDialog(onSelect = viewModel::skipNotificationFor, onDismiss = viewModel::cancelDialog)
                         }
                         null -> {}

@@ -1,6 +1,5 @@
 package hu.kts.wtracker.ui.main
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.widget.Toast
@@ -10,28 +9,29 @@ import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import hu.kts.wtracker.KEY_PERIOD_HISTORY
-import hu.kts.wtracker.KEY_SKIP_NOTIFICATIONS_UNTIL
 import hu.kts.wtracker.R
 import hu.kts.wtracker.Timer
 import hu.kts.wtracker.WTrackerApp
-import java.text.DateFormat
-import java.text.SimpleDateFormat
+import hu.kts.wtracker.data.Period
+import hu.kts.wtracker.data.PeriodHistoryItem
+import hu.kts.wtracker.data.SummaryViewState
+import hu.kts.wtracker.persistency.Preferences
 import java.time.Clock
 import java.time.Duration
-import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
 class MainViewModel : ViewModel() {
 
-    private val _state = MutableLiveData<ViewState>()
-    val state: LiveData<ViewState>
+    private val _state = MutableLiveData<SummaryViewState>()
+    val state: LiveData<SummaryViewState>
        get() = _state
 
     private val timer = Timer()
     private val context = WTrackerApp.instance.applicationContext
-    private val preferences = context.getSharedPreferences("prefs", Context.MODE_PRIVATE)
+    private val sharedPreferences = context.getSharedPreferences("prefs", Context.MODE_PRIVATE)
+    private val preferences = Preferences(context)
     private lateinit var textToSpeech: TextToSpeech
     private val gson = Gson()
     private val periodHistoryItemType = object : TypeToken<ArrayList<PeriodHistoryItem>>() {}.type
@@ -43,7 +43,7 @@ class MainViewModel : ViewModel() {
     private var restSegmentSec = 0
     private var period = Period.STOPPED
     private var periodHistory = ArrayList<PeriodHistoryItem>()
-    private var dialog: DialogType? = null
+    private var dialog: SummaryViewState.DialogType? = null
     private var skipNotificationsUntil = 0L
 
     init {
@@ -65,7 +65,7 @@ class MainViewModel : ViewModel() {
             addToHistory(period)
             resetSkipNotifications()
         } else {
-            dialog = DialogType.Reset
+            dialog = SummaryViewState.DialogType.Reset
         }
         updateViewState()
     }
@@ -84,23 +84,19 @@ class MainViewModel : ViewModel() {
     }
 
     fun onSkipNotificationsButtonClick() {
-        dialog = DialogType.SkipNotifications
+        dialog = SummaryViewState.DialogType.SkipNotifications
         updateViewState()
     }
 
     fun skipNotificationFor(minutes: Int) {
         skipNotificationsUntil = Clock.offset(clock, Duration.ofMinutes(minutes.toLong())).millis()
-        preferences.edit().apply {
-            putLong(KEY_SKIP_NOTIFICATIONS_UNTIL, skipNotificationsUntil)
-        }.apply()
+        preferences.skipNotificationsUntil = skipNotificationsUntil
         cancelDialog()
     }
 
     private fun resetSkipNotifications() {
         skipNotificationsUntil = 0
-        preferences.edit().apply {
-            putLong(KEY_SKIP_NOTIFICATIONS_UNTIL, skipNotificationsUntil)
-        }.apply()
+        preferences.skipNotificationsUntil = skipNotificationsUntil
     }
 
     fun cancelDialog() {
@@ -150,22 +146,24 @@ class MainViewModel : ViewModel() {
     }
 
     private fun updateViewState() {
-        _state.postValue(ViewState(
-            workSec.toTimeString(),
-            restSec.toTimeString(),
-            workSegmentSec.toTimeString(),
-            restSegmentSec.toTimeString(),
-            context.getString(if (period.isRunning()) R.string.stop else R.string.reset),
-            period,
-            dialog,
-            calcSkipNotificationsButtonText(),
-            calcEfficiency(),
-        ))
+        _state.postValue(
+            SummaryViewState(
+                workSec.hMmSsFormat(),
+                restSec.hMmSsFormat(),
+                workSegmentSec.hMmSsFormat(),
+                restSegmentSec.hMmSsFormat(),
+                context.getString(if (period.isRunning()) R.string.stop else R.string.reset),
+                period,
+                dialog,
+                calcSkipNotificationsButtonText(),
+                calcEfficiency(),
+            )
+        )
     }
 
     private fun calcSkipNotificationsButtonText(): String? {
         if (skipNotificationsUntil <= clock.millis()) return null
-        return mmHhFormat.format(Date(skipNotificationsUntil - clock.millis()))
+        return (skipNotificationsUntil - clock.millis()).mmSsFormat()
     }
 
     private fun calcEfficiency(): Int {
@@ -178,13 +176,13 @@ class MainViewModel : ViewModel() {
     }
 
     private fun persistState() {
-        preferences.edit().apply {
+        sharedPreferences.edit().apply {
             putString(KEY_PERIOD_HISTORY, gson.toJson(periodHistory))
         }.apply()
     }
 
     private fun restoreState() {
-        periodHistory = gson.fromJson(preferences.getString(KEY_PERIOD_HISTORY, "[]"), periodHistoryItemType)
+        periodHistory = gson.fromJson(sharedPreferences.getString(KEY_PERIOD_HISTORY, "[]"), periodHistoryItemType)
         if (periodHistory.isEmpty()) return // nothing to restore
 
         period = periodHistory.last().period
@@ -210,7 +208,7 @@ class MainViewModel : ViewModel() {
             timer.start { onTimerTick() }
         }
 
-        skipNotificationsUntil = preferences.getLong(KEY_SKIP_NOTIFICATIONS_UNTIL, 0L)
+        skipNotificationsUntil = preferences.skipNotificationsUntil
     }
 
     /**
@@ -235,47 +233,4 @@ class MainViewModel : ViewModel() {
 
     private fun Int.isWholeMinute() = this % 60 == 0
 
-    companion object {
-        @SuppressLint("SimpleDateFormat")
-        private val mmHhFormat = SimpleDateFormat("mm:ss")
-    }
-
-    data class ViewState(
-        val work: String,
-        val rest: String,
-        val workSegment: String,
-        val restSegment: String,
-        val stopResetText: String,
-        val period: Period,
-        val dialog: DialogType? = null,
-        val skipNotificationTimeLeft: String?,
-        val efficiency: Int,
-    )
-
-    data class PeriodHistoryItem(
-        val timestamp: Long,
-        val period: Period
-    ) {
-
-        var durationSeconds = 0
-        private set
-
-        fun calcDuration(nextPeriodStart: Long) {
-            durationSeconds = TimeUnit.MILLISECONDS.toSeconds(nextPeriodStart - timestamp).toInt()
-        }
-
-        companion object {
-            private val format = SimpleDateFormat.getTimeInstance(DateFormat.SHORT)
-        }
-    }
-
-    enum class Period {
-        STOPPED, WORK, REST;
-
-        fun isRunning() = this != STOPPED
-    }
-
-    enum class DialogType {
-        Reset, SkipNotifications
-    }
 }

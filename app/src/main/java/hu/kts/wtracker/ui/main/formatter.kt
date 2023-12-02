@@ -1,12 +1,23 @@
 package hu.kts.wtracker.ui.main
 
-private const val SECS_IN_HOUR = 3600
-private const val SECS_IN_MINUTE = 60
+import android.annotation.SuppressLint
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.TimeZone
+import java.util.concurrent.TimeUnit
 
-fun Int.toTimeString(): String {
-    val hours = this / SECS_IN_HOUR
-    val timeWithoutHours = this % SECS_IN_HOUR
-    val minutes = timeWithoutHours / SECS_IN_MINUTE
-    val seconds = timeWithoutHours % SECS_IN_MINUTE
-    return "$hours:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}"
+@SuppressLint("SimpleDateFormat")
+private val mmSsFormat = SimpleDateFormat("mm:ss")
+@SuppressLint("SimpleDateFormat")
+private val hMmSsFormat = SimpleDateFormat("H:mm:ss").apply {
+    timeZone = TimeZone.getTimeZone("GMT")
+}
+
+fun Int.hMmSsFormat(): String {
+    val millis = TimeUnit.SECONDS.toMillis(this.toLong())
+    return hMmSsFormat.format(Date(millis))
+}
+
+fun Long.mmSsFormat(): String {
+    return mmSsFormat.format(Date(this))
 }
