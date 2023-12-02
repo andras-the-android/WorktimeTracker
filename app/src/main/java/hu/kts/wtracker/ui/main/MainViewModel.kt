@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.widget.Toast
-import androidx.annotation.ColorRes
 import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -23,7 +22,6 @@ import java.text.SimpleDateFormat
 import java.time.Clock
 import java.time.Duration
 import java.util.Date
-import java.util.LinkedList
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
@@ -33,10 +31,6 @@ class MainViewModel : ViewModel() {
     private val _state = MutableLiveData<ViewState>()
     val state: LiveData<ViewState>
        get() = _state
-
-    private val _historyState = MutableLiveData(LinkedList<PeriodHistoryViewItem>())
-    val historyState: LiveData<LinkedList<PeriodHistoryViewItem>>
-        get() = _historyState
 
     private val timer = Timer()
     private val context = WTrackerApp.instance.applicationContext
@@ -87,7 +81,6 @@ class MainViewModel : ViewModel() {
         workSegmentSec = 0
         restSegmentSec = 0
         periodHistory = arrayListOf()
-        _historyState.value = LinkedList<PeriodHistoryViewItem>()
         resetSkipNotifications()
         persistState()
         updateViewState()
@@ -194,15 +187,7 @@ class MainViewModel : ViewModel() {
     }
 
     private fun addToHistory(period: Period) {
-        val newItem = PeriodHistoryItem(clock.millis(), period)
-        //This may seems weird at first but we always show the finished items in the history view.
-        //So the history view will always contain periodHistory.size - 1 elements
-        if (periodHistory.isNotEmpty()) {
-            _historyState.value = _historyState.value?.apply { add(periodHistory.last().toViewItem(newItem.timestamp)) }
-        }
-        periodHistory.lastOrNull()?.calcDuration(newItem.timestamp)
-        periodHistory.add(newItem)
-        persistState()
+        // TODO implement history
     }
 
     private fun persistState() {
@@ -238,7 +223,6 @@ class MainViewModel : ViewModel() {
             timer.start { onTimerTick() }
         }
 
-        generateHistoryView()
         notificationFrequency = NotificationFrequency.safeValueOf(preferences.getString(KEY_NOTIFICATION_FREQUENCY, ""))
         skipNotificationsUntil = preferences.getLong(KEY_SKIP_NOTIFICATIONS_UNTIL, 0L)
     }
@@ -251,14 +235,6 @@ class MainViewModel : ViewModel() {
             TimeUnit.MILLISECONDS.toSeconds(clock.millis() - timestamp).toInt()
         } else {
             durationSeconds
-        }
-    }
-
-    private fun generateHistoryView() {
-        _historyState.value = LinkedList<PeriodHistoryViewItem>().apply {
-            for (i in 0 until periodHistory.size - 1) {
-                add(periodHistory[i].toViewItem(periodHistory[i + 1].timestamp))
-            }
         }
     }
 
@@ -299,14 +275,6 @@ class MainViewModel : ViewModel() {
         var durationSeconds = 0
         private set
 
-        fun toViewItem(nextPeriodStart: Long): PeriodHistoryViewItem {
-            return PeriodHistoryViewItem(
-                format.format(Date(timestamp)),
-                period.color,
-                TimeUnit.MILLISECONDS.toMinutes(nextPeriodStart - timestamp).toInt()
-            )
-        }
-
         fun calcDuration(nextPeriodStart: Long) {
             durationSeconds = TimeUnit.MILLISECONDS.toSeconds(nextPeriodStart - timestamp).toInt()
         }
@@ -316,24 +284,8 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    data class PeriodHistoryViewItem(
-        val timestamp: String,
-        @ColorRes val color: Int,
-        val duration: Int
-    )
-
-    enum class Period(@ColorRes val color: Int) {
-        STOPPED(R.color.bg_default), WORK(R.color.bg_work), REST(R.color.bg_rest);
-
-        companion object {
-            fun safeValueOf(value: String?): Period {
-                return try {
-                    valueOf(value ?: "")
-                } catch (e: IllegalArgumentException) {
-                    STOPPED
-                }
-            }
-        }
+    enum class Period {
+        STOPPED, WORK, REST;
 
         fun isRunning() = this != STOPPED
     }

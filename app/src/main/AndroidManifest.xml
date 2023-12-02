@@ -7,8 +7,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:name=".WTrackerApp"
-        android:theme="@style/Theme.WorktimeTracker">
+        android:name=".WTrackerApp">
         <activity
             android:name=".MainActivity"
             android:exported="true">

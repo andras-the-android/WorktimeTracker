@@ -2,8 +2,8 @@ package hu.kts.wtracker
 
 import android.os.Bundle
 import android.view.WindowManager
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.livedata.observeAsState
@@ -15,7 +15,7 @@ import hu.kts.wtracker.ui.main.MainViewModel
 import hu.kts.wtracker.ui.main.SkipNotificationsDialog
 import hu.kts.wtracker.ui.theme.WTrackerTheme
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
