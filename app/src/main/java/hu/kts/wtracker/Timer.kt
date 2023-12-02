@@ -1,9 +1,10 @@
 package hu.kts.wtracker
 
-import java.util.*
 import java.util.Timer
+import java.util.TimerTask
+import javax.inject.Inject
 
-class Timer {
+class Timer @Inject constructor() {
 
     private var task: TimerTask? = null
     private val timer = Timer()

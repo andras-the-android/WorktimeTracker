@@ -4,15 +4,17 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.ViewModelProvider
+import dagger.hilt.android.AndroidEntryPoint
 import hu.kts.wtracker.data.Period
 import hu.kts.wtracker.data.SummaryViewState
 import hu.kts.wtracker.ui.theme.WTrackerTheme
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -20,8 +22,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        val viewModel: MainViewModel by viewModels()
+
         setContent {
-            val viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
             val viewState = viewModel.state.observeAsState()
 

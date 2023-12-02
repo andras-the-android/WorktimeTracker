@@ -1,41 +1,45 @@
 package hu.kts.wtracker.ui.main
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.speech.tts.TextToSpeech
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import hu.kts.wtracker.KEY_PERIOD_HISTORY
 import hu.kts.wtracker.R
 import hu.kts.wtracker.Timer
-import hu.kts.wtracker.WTrackerApp
 import hu.kts.wtracker.data.Period
 import hu.kts.wtracker.data.PeriodHistoryItem
 import hu.kts.wtracker.data.SummaryViewState
 import hu.kts.wtracker.persistency.Preferences
 import java.time.Clock
 import java.time.Duration
-import java.util.Locale
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 import kotlin.math.roundToInt
 
-class MainViewModel : ViewModel() {
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val timer: Timer,
+    @ApplicationContext private val context: Context,
+    private val sharedPreferences: SharedPreferences,
+    private val preferences: Preferences,
+    private val textToSpeech: TextToSpeech,
+    private val clock: Clock,
+) : ViewModel() {
 
     private val _state = MutableLiveData<SummaryViewState>()
     val state: LiveData<SummaryViewState>
        get() = _state
 
-    private val timer = Timer()
-    private val context = WTrackerApp.instance.applicationContext
-    private val sharedPreferences = context.getSharedPreferences("prefs", Context.MODE_PRIVATE)
-    private val preferences = Preferences(context)
-    private lateinit var textToSpeech: TextToSpeech
+
     private val gson = Gson()
     private val periodHistoryItemType = object : TypeToken<ArrayList<PeriodHistoryItem>>() {}.type
-    private val clock = Clock.systemDefaultZone()
 
     private var workSec = 0
     private var restSec = 0
@@ -49,13 +53,6 @@ class MainViewModel : ViewModel() {
     init {
         restoreState()
         updateViewState()
-        textToSpeech = TextToSpeech(context) { status ->
-            if (status == TextToSpeech.ERROR) {
-                Toast.makeText(context, R.string.text_to_speech_error, Toast.LENGTH_SHORT).show()
-            } else {
-                textToSpeech.language = Locale.US
-            }
-        }
     }
 
     fun onStopResetButtonClicked() {

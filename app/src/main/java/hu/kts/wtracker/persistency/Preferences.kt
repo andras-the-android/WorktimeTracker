@@ -1,12 +1,11 @@
 package hu.kts.wtracker.persistency
 
-import android.content.Context
+import android.content.SharedPreferences
+import javax.inject.Inject
 
-class Preferences(
-    context: Context
+class Preferences @Inject constructor(
+    private val preferences: SharedPreferences
 ) {
-
-    private val preferences = context.getSharedPreferences("prefs", Context.MODE_PRIVATE)
 
     var skipNotificationsUntil: Long
         get() = preferences.getLong(KEY_SKIP_NOTIFICATIONS_UNTIL, 0L)
