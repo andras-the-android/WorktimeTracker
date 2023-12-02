@@ -104,7 +104,7 @@ private fun Buttons(
 ) {
     val buttonColors = ButtonDefaults.outlinedButtonColors(contentColor = Grey)
     OutlinedButton(onClick = onStartButtonClick, colors = buttonColors) {
-        Text(state.stopResetText)
+        Text(stringResource(if (state.period.isRunning()) R.string.stop else R.string.reset))
     }
     Spacer(modifier = Modifier.size(16.dp))
     OutlinedButton(
@@ -193,7 +193,6 @@ private fun PreviewSummaryScreen(displayMode: SummaryScreenDisplayMode) {
                 rest = "0:00:00",
                 workSegment = "0:00:00",
                 restSegment = "0:00:00",
-                stopResetText = "Start",
                 period = Period.STOPPED,
                 dialog = null,
                 skipNotificationTimeLeft = null,

@@ -10,6 +10,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import hu.kts.wtracker.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import java.time.Clock
 
 @Module
@@ -33,6 +35,11 @@ object AppModule {
                 Toast.makeText(context, R.string.text_to_speech_error, Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    @Provides
+    fun provideCoroutineScope(): CoroutineScope {
+        return CoroutineScope(Dispatchers.IO)
     }
 
 }

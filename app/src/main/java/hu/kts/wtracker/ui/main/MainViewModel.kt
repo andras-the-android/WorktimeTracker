@@ -1,88 +1,104 @@
 package hu.kts.wtracker.ui.main
 
-import android.content.Context
 import android.content.SharedPreferences
 import android.speech.tts.TextToSpeech
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import hu.kts.wtracker.KEY_PERIOD_HISTORY
-import hu.kts.wtracker.R
 import hu.kts.wtracker.Timer
 import hu.kts.wtracker.data.Period
 import hu.kts.wtracker.data.PeriodHistoryItem
+import hu.kts.wtracker.data.SummaryData
 import hu.kts.wtracker.data.SummaryViewState
 import hu.kts.wtracker.persistency.Preferences
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.time.Clock
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import kotlin.math.roundToInt
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val timer: Timer,
-    @ApplicationContext private val context: Context,
     private val sharedPreferences: SharedPreferences,
     private val preferences: Preferences,
     private val textToSpeech: TextToSpeech,
     private val clock: Clock,
 ) : ViewModel() {
 
-    private val _state = MutableLiveData<SummaryViewState>()
-    val state: LiveData<SummaryViewState>
-       get() = _state
+    private val summaryData = MutableStateFlow(SummaryData(0, 0, 0, 0, Period.STOPPED))
+    private val dialog = MutableStateFlow<SummaryViewState.DialogType?>(null)
 
+    private val period
+        get() = summaryData.value.period
 
     private val gson = Gson()
     private val periodHistoryItemType = object : TypeToken<ArrayList<PeriodHistoryItem>>() {}.type
 
-    private var workSec = 0
-    private var restSec = 0
-    private var workSegmentSec = 0
-    private var restSegmentSec = 0
-    private var period = Period.STOPPED
     private var periodHistory = ArrayList<PeriodHistoryItem>()
-    private var dialog: SummaryViewState.DialogType? = null
     private var skipNotificationsUntil = 0L
+
+    val state: StateFlow<SummaryViewState> =
+        combine(
+            summaryData,
+            dialog,
+        ) { summaryData, dialogType ->
+            return@combine SummaryViewState(
+                summaryData.workSec.hMmSsFormat(),
+                summaryData.restSec.hMmSsFormat(),
+                summaryData.workSegmentSec.hMmSsFormat(),
+                summaryData.restSegmentSec.hMmSsFormat(),
+                period,
+                dialogType,
+                calcSkipNotificationsButtonText(),
+                summaryData.calcEfficiency(),
+            )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = SummaryViewState.empty
+        )
 
     init {
         restoreState()
-        updateViewState()
+        viewModelScope.launch {
+            timer.tickFlow.collect {
+                onTimerTick()
+            }
+        }
     }
 
     fun onStopResetButtonClicked() {
         if (period.isRunning()) {
             timer.stop()
-            period = Period.STOPPED
+            summaryData.update { it.copy(period = Period.STOPPED) }
             addToHistory(period)
             resetSkipNotifications()
         } else {
-            dialog = SummaryViewState.DialogType.Reset
+            dialog.value = SummaryViewState.DialogType.Reset
         }
-        updateViewState()
     }
 
     fun confirmReset() {
         assert(!period.isRunning())
-        workSec = 0
-        restSec = 0
-        workSegmentSec = 0
-        restSegmentSec = 0
+        summaryData.value = SummaryData(0, 0, 0, 0, Period.STOPPED)
         periodHistory = arrayListOf()
         resetSkipNotifications()
         persistState()
-        updateViewState()
         cancelDialog()
     }
 
     fun onSkipNotificationsButtonClick() {
-        dialog = SummaryViewState.DialogType.SkipNotifications
-        updateViewState()
+        dialog.value = SummaryViewState.DialogType.SkipNotifications
     }
 
     fun skipNotificationFor(minutes: Int) {
@@ -97,8 +113,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun cancelDialog() {
-        dialog = null
-        updateViewState()
+        dialog.value = null
     }
 
     fun onWorkSegmentClick() {
@@ -113,49 +128,27 @@ class MainViewModel @Inject constructor(
         // if it's already running, switch to the other one regardless which timer was clicked
         if (period.isRunning()) {
             if (period == Period.WORK) {
-                period = Period.REST
-                restSegmentSec = 0
+                summaryData.update { it.copy(period = Period.REST, restSegmentSec = 0) }
             } else {
-                period = Period.WORK
-                workSegmentSec = 0
+                summaryData.update { it.copy(period = Period.WORK, workSegmentSec = 0) }
                 resetSkipNotifications()
             }
         // set the initial value if it's not running
         } else {
-            timer.start { onTimerTick() }
-            period = initialPeriod
+            timer.start()
+            summaryData.update { it.copy(period = initialPeriod) }
         }
 
         addToHistory(period)
-        updateViewState()
     }
 
     private fun onTimerTick() {
         if (period == Period.WORK) {
-            ++workSec
-            ++workSegmentSec
+            summaryData.update { it.copy(workSec = it.workSec.inc(), workSegmentSec = it.workSegmentSec.inc()) }
         } else {
-            ++restSec
-            ++restSegmentSec
+            summaryData.update { it.copy(restSec = it.restSec.inc(), restSegmentSec = it.restSegmentSec.inc()) }
         }
-        updateViewState()
         handleNotification()
-    }
-
-    private fun updateViewState() {
-        _state.postValue(
-            SummaryViewState(
-                workSec.hMmSsFormat(),
-                restSec.hMmSsFormat(),
-                workSegmentSec.hMmSsFormat(),
-                restSegmentSec.hMmSsFormat(),
-                context.getString(if (period.isRunning()) R.string.stop else R.string.reset),
-                period,
-                dialog,
-                calcSkipNotificationsButtonText(),
-                calcEfficiency(),
-            )
-        )
     }
 
     private fun calcSkipNotificationsButtonText(): String? {
@@ -163,13 +156,11 @@ class MainViewModel @Inject constructor(
         return (skipNotificationsUntil - clock.millis()).mmSsFormat()
     }
 
-    private fun calcEfficiency(): Int {
-        if (workSec == 0) return 0 // avoid divide by zero
-        return (workSec.toFloat() / (workSec + restSec) * 100).roundToInt()
-    }
-
     private fun addToHistory(period: Period) {
-        // TODO implement history
+        val newItem = PeriodHistoryItem(clock.millis(), period)
+        periodHistory.lastOrNull()?.calcDuration(newItem.timestamp)
+        periodHistory.add(newItem)
+        persistState()
     }
 
     private fun persistState() {
@@ -182,7 +173,12 @@ class MainViewModel @Inject constructor(
         periodHistory = gson.fromJson(sharedPreferences.getString(KEY_PERIOD_HISTORY, "[]"), periodHistoryItemType)
         if (periodHistory.isEmpty()) return // nothing to restore
 
-        period = periodHistory.last().period
+        val period = periodHistory.last().period
+
+        var workSec = 0
+        var restSec = 0
+        var workSegmentSec = 0
+        var restSegmentSec = 0
 
         periodHistory.forEachIndexed { index, item ->
             if (index < periodHistory.size - 1) {
@@ -201,8 +197,10 @@ class MainViewModel @Inject constructor(
             }
         }
 
+        summaryData.value = SummaryData(workSec, restSec, workSegmentSec, restSegmentSec, period)
+
         if (period.isRunning()) {
-            timer.start { onTimerTick() }
+            timer.start()
         }
 
         skipNotificationsUntil = preferences.skipNotificationsUntil
@@ -220,6 +218,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun handleNotification() {
+        val restSegmentSec = summaryData.value.restSegmentSec
         if (period == Period.REST && restSegmentSec.isWholeMinute()) {
             if (clock.millis() > skipNotificationsUntil) {
                 val minutes = TimeUnit.SECONDS.toMinutes(restSegmentSec.toLong()).toInt()

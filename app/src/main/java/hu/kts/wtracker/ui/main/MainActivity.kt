@@ -7,10 +7,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.getValue
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
-import hu.kts.wtracker.data.Period
 import hu.kts.wtracker.data.SummaryViewState
 import hu.kts.wtracker.ui.theme.WTrackerTheme
 
@@ -26,34 +26,31 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
-            val viewState = viewModel.state.observeAsState()
+            val viewState: SummaryViewState by viewModel.state.collectAsStateWithLifecycle()
 
-            WTrackerTheme(viewState.value?.period ?: Period.STOPPED) {
-                viewState.value?.let { state ->
+            WTrackerTheme(viewState.period) {
+                keepScreenAwake(viewState.period.isRunning())
 
-                    keepScreenAwake(state.period.isRunning())
+                MainScreen(
+                    state = viewState,
+                    onWorkClick = viewModel::onWorkSegmentClick,
+                    onRestClick = viewModel::onRestSegmentClick,
+                    onStartButtonClick = viewModel::onStopResetButtonClicked,
+                    onSkipNotificationsButtonClick = viewModel::onSkipNotificationsButtonClick,
+                    windowSizeClass = calculateWindowSizeClass(this)
+                )
 
-                    MainScreen(
-                        state = state,
-                        onWorkClick = viewModel::onWorkSegmentClick,
-                        onRestClick = viewModel::onRestSegmentClick,
-                        onStartButtonClick = viewModel::onStopResetButtonClicked,
-                        onSkipNotificationsButtonClick = viewModel::onSkipNotificationsButtonClick,
-                        windowSizeClass = calculateWindowSizeClass(this)
-                    )
-
-                    when (state.dialog) {
-                        SummaryViewState.DialogType.Reset -> {
-                            ConfirmResetDialog(
-                                onConfirm = viewModel::confirmReset,
-                                onDismiss = viewModel::cancelDialog,
-                            )
-                        }
-                        SummaryViewState.DialogType.SkipNotifications -> {
-                            SkipNotificationsDialog(onSelect = viewModel::skipNotificationFor, onDismiss = viewModel::cancelDialog)
-                        }
-                        null -> {}
+                when (viewState.dialog) {
+                    SummaryViewState.DialogType.Reset -> {
+                        ConfirmResetDialog(
+                            onConfirm = viewModel::confirmReset,
+                            onDismiss = viewModel::cancelDialog,
+                        )
                     }
+                    SummaryViewState.DialogType.SkipNotifications -> {
+                        SkipNotificationsDialog(onSelect = viewModel::skipNotificationFor, onDismiss = viewModel::cancelDialog)
+                    }
+                    null -> {}
                 }
             }
         }
