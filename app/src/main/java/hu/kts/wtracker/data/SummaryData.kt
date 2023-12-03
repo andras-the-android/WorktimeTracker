@@ -13,4 +13,8 @@ data class SummaryData(
         if (workSec == 0) return 0 // avoid divide by zero
         return (workSec.toFloat() / (workSec + restSec) * 100).roundToInt()
     }
+
+    companion object {
+        val empty = SummaryData(0, 0, 0, 0, Period.STOPPED)
+    }
 }
