@@ -111,6 +111,11 @@ class MainViewModel @Inject constructor(
             }
         // set the initial value if it's not running
         } else {
+            if (initialPeriod == Period.WORK) {
+                summaryData.update { it.copy(period = initialPeriod, workSegmentSec = 0) }
+            } else {
+                summaryData.update { it.copy(period = initialPeriod, restSegmentSec = 0) }
+            }
             timer.start()
             summaryData.update { it.copy(period = initialPeriod) }
         }
