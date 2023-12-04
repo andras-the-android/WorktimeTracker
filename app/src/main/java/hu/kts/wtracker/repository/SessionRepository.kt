@@ -1,43 +1,40 @@
 package hu.kts.wtracker.repository
 
-import android.content.SharedPreferences
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import hu.kts.wtracker.KEY_PERIOD_HISTORY
 import hu.kts.wtracker.data.Period
 import hu.kts.wtracker.data.SessionItem
 import hu.kts.wtracker.data.SummaryData
 import hu.kts.wtracker.persistency.Preferences
+import hu.kts.wtracker.persistency.SessionDao
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.time.Clock
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class SessionRepository @Inject constructor(
-    private val sharedPreferences: SharedPreferences,
+    private val dao: SessionDao,
     private val clock: Clock,
     private val preferences: Preferences,
+    private val coroutineScope: CoroutineScope,
 ) {
-    private val gson = Gson()
-    private val sessionItemType = object : TypeToken<ArrayList<SessionItem>>() {}.type
-
-    private var periodHistory = ArrayList<SessionItem>()
+    private var periodHistory = mutableListOf<SessionItem>()
 
     fun endSession() {
         periodHistory.clear()
         preferences.clearActiveSessionTimestamp()
-        persist()
     }
 
     fun addToHistory(period: Period) {
-        val newItem = SessionItem(clock.millis(), preferences.getOrCreateActiveSessionTimestamp(), period, )
-        periodHistory.lastOrNull()?.calcDuration(newItem.timestamp)
-        periodHistory.add(newItem)
-        persist()
+        coroutineScope.launch {
+            val newItem = SessionItem(clock.millis(), preferences.getOrCreateActiveSessionTimestamp(), period, )
+            periodHistory.lastOrNull()?.calcDuration(newItem.timestamp)
+            dao.insert(newItem)
+        }
     }
 
-    fun restore(): SummaryData {
-        periodHistory = gson.fromJson(sharedPreferences.getString(KEY_PERIOD_HISTORY, "[]"), sessionItemType)
-        if (periodHistory.isEmpty()) return SummaryData.empty // nothing to restore
+    suspend fun restore(): SummaryData {
+        if (preferences.hasActiveSession()) return SummaryData.empty // nothing to restore
+        periodHistory = dao.getAll(preferences.getOrCreateActiveSessionTimestamp()).toMutableList()
 
         val period = periodHistory.last().period
 
@@ -64,12 +61,6 @@ class SessionRepository @Inject constructor(
         }
 
         return SummaryData(workSec, restSec, workSegmentSec, restSegmentSec, period)
-    }
-
-    private fun persist() {
-        sharedPreferences.edit().apply {
-            putString(KEY_PERIOD_HISTORY, gson.toJson(periodHistory))
-        }.apply()
     }
 
     /**

@@ -133,10 +133,12 @@ class MainViewModel @Inject constructor(
     }
 
     private fun restoreState() {
-        summaryData.value = sessionRepository.restore()
+        viewModelScope.launch {
+            summaryData.value = sessionRepository.restore()
 
-        if (period.isRunning()) {
-            timer.start()
+            if (period.isRunning()) {
+                timer.start()
+            }
         }
     }
 }

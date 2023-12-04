@@ -17,6 +17,10 @@ class Preferences @Inject constructor(
             }.apply()
         }
 
+    fun hasActiveSession(): Boolean {
+        return preferences.contains(KEY_ACTIVE_SESSION_TIMESTAMP)
+    }
+
     fun getOrCreateActiveSessionTimestamp(): Long {
         var value = preferences.getLong(KEY_ACTIVE_SESSION_TIMESTAMP, 0L)
         if (value == 0L) {
@@ -30,7 +34,7 @@ class Preferences @Inject constructor(
 
     fun clearActiveSessionTimestamp() {
         preferences.edit().apply {
-            putLong(KEY_ACTIVE_SESSION_TIMESTAMP, 0L)
+            remove(KEY_ACTIVE_SESSION_TIMESTAMP)
         }.apply()
     }
 
