@@ -7,7 +7,7 @@ import hu.kts.wtracker.Timer
 import hu.kts.wtracker.data.Period
 import hu.kts.wtracker.data.SummaryData
 import hu.kts.wtracker.data.SummaryViewState
-import hu.kts.wtracker.persistency.DataBase
+import hu.kts.wtracker.repository.SessionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val timer: Timer,
-    private val dataBase: DataBase,
+    private val sessionRepository: SessionRepository,
     private val notifications: Notifications,
 ) : ViewModel() {
 
@@ -64,7 +64,7 @@ class MainViewModel @Inject constructor(
         if (period.isRunning()) {
             timer.stop()
             summaryData.update { it.copy(period = Period.STOPPED) }
-            dataBase.addToHistory(period)
+            sessionRepository.addToHistory(period)
             notifications.resetSkip()
         } else {
             dialog.value = SummaryViewState.DialogType.Reset
@@ -74,7 +74,7 @@ class MainViewModel @Inject constructor(
     fun confirmReset() {
         assert(!period.isRunning())
         summaryData.value = SummaryData.empty
-        dataBase.clearHistory()
+        sessionRepository.endSession()
         notifications.resetSkip()
         cancelDialog()
     }
@@ -120,7 +120,7 @@ class MainViewModel @Inject constructor(
             summaryData.update { it.copy(period = initialPeriod) }
         }
 
-        dataBase.addToHistory(period)
+        sessionRepository.addToHistory(period)
     }
 
     private fun onTimerTick() {
@@ -133,7 +133,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun restoreState() {
-        summaryData.value = dataBase.restore()
+        summaryData.value = sessionRepository.restore()
 
         if (period.isRunning()) {
             timer.start()

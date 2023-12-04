@@ -4,7 +4,7 @@
     <string name="stop">Stop</string>
     <string name="reset">Reset</string>
     <string name="reset_confirm_dialog_title">Reset</string>
-    <string name="reset_confirm_dialog_text">Do you really want to finish current workflow?</string>
+    <string name="reset_confirm_dialog_text">Do you really want to finish current session?</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="work">Work</string>

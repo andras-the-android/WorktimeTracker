@@ -1,39 +1,42 @@
-package hu.kts.wtracker.persistency
+package hu.kts.wtracker.repository
 
 import android.content.SharedPreferences
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import hu.kts.wtracker.KEY_PERIOD_HISTORY
 import hu.kts.wtracker.data.Period
-import hu.kts.wtracker.data.PeriodHistoryItem
+import hu.kts.wtracker.data.SessionItem
 import hu.kts.wtracker.data.SummaryData
+import hu.kts.wtracker.persistency.Preferences
 import java.time.Clock
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-class DataBase @Inject constructor(
+class SessionRepository @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val clock: Clock,
+    private val preferences: Preferences,
 ) {
     private val gson = Gson()
-    private val periodHistoryItemType = object : TypeToken<ArrayList<PeriodHistoryItem>>() {}.type
+    private val sessionItemType = object : TypeToken<ArrayList<SessionItem>>() {}.type
 
-    private var periodHistory = ArrayList<PeriodHistoryItem>()
+    private var periodHistory = ArrayList<SessionItem>()
 
-    fun clearHistory() {
+    fun endSession() {
         periodHistory.clear()
+        preferences.clearActiveSessionTimestamp()
         persist()
     }
 
     fun addToHistory(period: Period) {
-        val newItem = PeriodHistoryItem(clock.millis(), period)
+        val newItem = SessionItem(clock.millis(), preferences.getOrCreateActiveSessionTimestamp(), period, )
         periodHistory.lastOrNull()?.calcDuration(newItem.timestamp)
         periodHistory.add(newItem)
         persist()
     }
 
     fun restore(): SummaryData {
-        periodHistory = gson.fromJson(sharedPreferences.getString(KEY_PERIOD_HISTORY, "[]"), periodHistoryItemType)
+        periodHistory = gson.fromJson(sharedPreferences.getString(KEY_PERIOD_HISTORY, "[]"), sessionItemType)
         if (periodHistory.isEmpty()) return SummaryData.empty // nothing to restore
 
         val period = periodHistory.last().period
@@ -72,7 +75,7 @@ class DataBase @Inject constructor(
     /**
      * Returns the duration of a period even if it's not finished yet
      */
-    private fun PeriodHistoryItem.getOngoingDuration(): Int {
+    private fun SessionItem.getOngoingDuration(): Int {
         return if (durationSeconds == 0) {
             TimeUnit.MILLISECONDS.toSeconds(clock.millis() - timestamp).toInt()
         } else {

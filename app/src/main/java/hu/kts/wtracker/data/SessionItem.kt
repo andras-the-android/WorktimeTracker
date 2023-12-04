@@ -1,11 +1,10 @@
 package hu.kts.wtracker.data
 
-import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
 
-data class PeriodHistoryItem(
+data class SessionItem(
     val timestamp: Long,
+    val sessionTimestamp: Long,
     val period: Period
 ) {
 
@@ -14,9 +13,5 @@ data class PeriodHistoryItem(
 
     fun calcDuration(nextPeriodStart: Long) {
         durationSeconds = TimeUnit.MILLISECONDS.toSeconds(nextPeriodStart - timestamp).toInt()
-    }
-
-    companion object {
-        private val format = SimpleDateFormat.getTimeInstance(DateFormat.SHORT)
     }
 }
