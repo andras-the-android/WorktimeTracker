@@ -3,6 +3,7 @@ package hu.kts.wtracker.ui.main
 import android.speech.tts.TextToSpeech
 import hu.kts.wtracker.data.Period
 import hu.kts.wtracker.data.SummaryData
+import hu.kts.wtracker.framework.SystemNotifications
 import hu.kts.wtracker.persistency.Preferences
 import java.time.Clock
 import java.time.Duration
@@ -13,6 +14,7 @@ class Notifications @Inject constructor(
     private val preferences: Preferences,
     private val textToSpeech: TextToSpeech,
     private val clock: Clock,
+    private val systemNotifications: SystemNotifications
 ) {
 
     private var skipNotificationsUntil = preferences.skipNotificationsUntil
@@ -37,6 +39,7 @@ class Notifications @Inject constructor(
             if (period == Period.REST && restSegmentSec.isWholeMinute()) {
                 if (clock.millis() > skipNotificationsUntil) {
                     val minutes = TimeUnit.SECONDS.toMinutes(restSegmentSec.toLong()).toInt()
+                    systemNotifications.showMinutelyNotification(minutes)
                     textToSpeech.speak("$minutes minutes", TextToSpeech.QUEUE_FLUSH, null, null)
                 }
             }
