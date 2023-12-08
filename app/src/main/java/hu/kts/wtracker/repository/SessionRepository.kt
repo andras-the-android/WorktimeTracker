@@ -33,7 +33,7 @@ class SessionRepository @Inject constructor(
     }
 
     suspend fun restore(): SummaryData {
-        if (preferences.hasActiveSession()) return SummaryData.empty // nothing to restore
+        if (!preferences.hasActiveSession()) return SummaryData.empty // nothing to restore
         periodHistory = dao.getAll(preferences.getOrCreateActiveSessionTimestamp()).toMutableList()
 
         val period = periodHistory.last().period
