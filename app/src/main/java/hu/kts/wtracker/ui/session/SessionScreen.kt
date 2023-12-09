@@ -54,11 +54,17 @@ fun SessionScreen(sessionItems: List<SessionViewItem>) {
 
 @Composable
 private fun SessionItemView(modifier: Modifier = Modifier, item: SessionViewItem) {
+    val height = item.calcHeight()
+    val label = if (height >= DISPLAY_LABEL_MIN_HEIGHT) {
+        stringResource(id = R.string.history_item_text, item.timestamp, item.durationMinutes)
+    } else {
+        ""
+    }
     Text(
-        text = stringResource(id = R.string.history_item_text,  item.timestamp, item.durationMinutes),
+        text = label,
         modifier = modifier
             .fillMaxWidth()
-            .height(item.calcHeight())
+            .height(height)
             .background(color = item.color)
             .wrapContentHeight(),
         color = Grey,
@@ -68,10 +74,12 @@ private fun SessionItemView(modifier: Modifier = Modifier, item: SessionViewItem
 
 private fun SessionViewItem.calcHeight(): Dp {
     //0 duration is in fact 0 - 30s so we set the height to half of a minute to make it visible on the screen
-    return ((durationMinutes * SECONDS_TO_DP_RATE).coerceAtLeast(2)).dp
+    return ((durationMinutes * SECONDS_TO_DP_RATE).coerceAtLeast(MIN_ITEM_HEIGHT)).dp
 }
 
-private const val SECONDS_TO_DP_RATE = 4
+private const val SECONDS_TO_DP_RATE = 2
+private const val MIN_ITEM_HEIGHT = 4
+private val DISPLAY_LABEL_MIN_HEIGHT = 30.dp
 
 @Preview(showSystemUi = true)
 @Composable
@@ -80,7 +88,7 @@ private fun PreviewSessionScreen() {
         SessionScreen(
             sessionItems = listOf(
                 SessionViewItem(1, "2023.12.05 8:00:23", 60, Red),
-                SessionViewItem(2, "2023.12.05 9:00:23", 5, White),
+                SessionViewItem(2, "2023.12.05 9:00:23", 0, White),
                 SessionViewItem(3, "2023.12.05 8:30:23", 15, Green),
                 SessionViewItem(4, "2023.12.05 8:00:231", 60, Red),
                 SessionViewItem(5, "2023.12.05 9:00:231", 5, White),
