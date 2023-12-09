@@ -20,6 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import hu.kts.wtracker.R
 import hu.kts.wtracker.data.Period
 import hu.kts.wtracker.data.SummaryViewState
@@ -104,7 +105,7 @@ private fun Buttons(
 ) {
     val buttonColors = ButtonDefaults.outlinedButtonColors(contentColor = Grey)
     OutlinedButton(onClick = onStartButtonClick, colors = buttonColors) {
-        Text(stringResource(if (state.period.isRunning()) R.string.stop else R.string.reset))
+        Text(stringResource(if (state.period.isRunning()) R.string.stop else R.string.reset), fontSize = 20.sp)
     }
     Spacer(modifier = Modifier.size(16.dp))
     OutlinedButton(
@@ -112,7 +113,7 @@ private fun Buttons(
         colors = buttonColors,
         enabled = state.period == Period.REST
     ) {
-        Text(state.skipNotificationTimeLeft ?: stringResource(R.string.skip_notifications_button))
+        Text(state.skipNotificationTimeLeft ?: stringResource(R.string.skip_notifications_button), fontSize = 20.sp)
     }
 }
 
