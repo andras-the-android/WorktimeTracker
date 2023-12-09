@@ -2,6 +2,7 @@ package hu.kts.wtracker.ui.session
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -31,7 +32,7 @@ import hu.kts.wtracker.ui.theme.WTrackerTheme
 fun SessionScreen(sessionItems: List<SessionViewItem>) {
     Surface(
         modifier = Modifier
-            .wrapContentHeight()
+            .fillMaxSize()
             .padding(16.dp)
             .border(width = 1.dp, color = Grey, shape = MaterialTheme.shapes.small)
             .clip(shape = MaterialTheme.shapes.small),
@@ -39,7 +40,7 @@ fun SessionScreen(sessionItems: List<SessionViewItem>) {
         LazyColumn {
             items(
                 items = sessionItems,
-                key = { it.timestamp },
+                key = { it.key },
             ) {
                 SessionItemView(item = it)
             }
@@ -59,29 +60,6 @@ private fun SessionItemView(item: SessionViewItem) {
         color = Grey,
         textAlign = TextAlign.Center
     )
-
-}
-@Preview(showSystemUi = true)
-@Composable
-private fun PreviewSessionScreen() {
-    WTrackerTheme {
-        SessionScreen(
-            sessionItems = listOf(
-                SessionViewItem("2023.12.05 8:00:23", 60, Red),
-                SessionViewItem("2023.12.05 9:00:23", 5, White),
-                SessionViewItem("2023.12.05 8:30:23", 15, Green),
-                SessionViewItem("2023.12.05 8:00:231", 60, Red),
-                SessionViewItem("2023.12.05 9:00:231", 5, White),
-                SessionViewItem("2023.12.05 8:30:231", 15, Green),
-                SessionViewItem("2023.12.05 8:00:232", 60, Red),
-                SessionViewItem("2023.12.05 9:00:232", 5, White),
-                SessionViewItem("2023.12.05 8:30:232", 15, Green),
-                SessionViewItem("2023.12.05 8:00:233", 60, Red),
-                SessionViewItem("2023.12.05 9:00:233", 5, White),
-                SessionViewItem("2023.12.05 8:30:233", 15, Green),
-            )
-        )
-    }
 }
 
 private fun SessionViewItem.calcHeight(): Dp {
@@ -90,3 +68,36 @@ private fun SessionViewItem.calcHeight(): Dp {
 }
 
 private const val SECONDS_TO_DP_RATE = 4
+
+@Preview(showSystemUi = true)
+@Composable
+private fun PreviewSessionScreen() {
+    WTrackerTheme {
+        SessionScreen(
+            sessionItems = listOf(
+                SessionViewItem(1, "2023.12.05 8:00:23", 60, Red),
+                SessionViewItem(2, "2023.12.05 9:00:23", 5, White),
+                SessionViewItem(3, "2023.12.05 8:30:23", 15, Green),
+                SessionViewItem(4, "2023.12.05 8:00:231", 60, Red),
+                SessionViewItem(5, "2023.12.05 9:00:231", 5, White),
+                SessionViewItem(6, "2023.12.05 8:30:231", 15, Green),
+                SessionViewItem(7, "2023.12.05 8:00:232", 60, Red),
+                SessionViewItem(8, "2023.12.05 9:00:232", 5, White),
+                SessionViewItem(9, "2023.12.05 8:30:232", 15, Green),
+                SessionViewItem(10, "2023.12.05 8:00:233", 60, Red),
+                SessionViewItem(11, "2023.12.05 9:00:233", 5, White),
+                SessionViewItem(12, "2023.12.05 8:30:233", 15, Green),
+            )
+        )
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun PreviewEmptySessionScreen() {
+    WTrackerTheme {
+        SessionScreen(
+            sessionItems = listOf()
+        )
+    }
+}

@@ -16,7 +16,13 @@ import hu.kts.wtracker.persistency.WTrackerDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import java.time.Clock
+import java.util.Locale
+import javax.inject.Qualifier
 import javax.inject.Singleton
+import kotlin.coroutines.CoroutineContext
+
+@Qualifier
+annotation class IoDispatcher
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -45,6 +51,12 @@ object AppModule {
     fun provideCoroutineScope(): CoroutineScope {
         return CoroutineScope(Dispatchers.IO)
     }
+
+    @Provides
+    @IoDispatcher
+    fun provideIoDispatcher(): CoroutineContext {
+        return Dispatchers.IO
+    }
     
     @Provides
     @Singleton
@@ -59,6 +71,11 @@ object AppModule {
     @Singleton
     fun provideSessionDao(database: WTrackerDatabase): SessionDao {
         return database.sessionDao()
+    }
+
+    @Provides
+    fun providesLocale(@ApplicationContext context: Context): Locale {
+        return context.resources.configuration.locales[0]
     }
 
 }

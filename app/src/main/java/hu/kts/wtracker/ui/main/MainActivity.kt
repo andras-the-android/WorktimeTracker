@@ -9,11 +9,16 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import hu.kts.wtracker.data.SessionViewItem
 import hu.kts.wtracker.data.SummaryViewState
+import hu.kts.wtracker.ui.session.SessionViewModel
+import hu.kts.wtracker.ui.summary.SummaryScreenDisplayMode
 import hu.kts.wtracker.ui.theme.WTrackerTheme
 
 @AndroidEntryPoint
@@ -24,23 +29,38 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val viewModel: MainViewModel by viewModels()
+        val sessionViewModel: SessionViewModel by viewModels()
 
         enableEdgeToEdge()
 
         setContent {
 
             val viewState: SummaryViewState by viewModel.state.collectAsStateWithLifecycle()
+            val sessionItems: List<SessionViewItem> by sessionViewModel.items.collectAsStateWithLifecycle()
+
+            val windowSizeClass = calculateWindowSizeClass(this)
+            val summaryDisplayMode = when {
+                windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact &&
+                        windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact -> SummaryScreenDisplayMode.Compact
+                windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact -> SummaryScreenDisplayMode.Horizontal
+                else -> SummaryScreenDisplayMode.Vertical
+            }
+
+            val usePager = windowSizeClass.widthSizeClass < WindowWidthSizeClass.Expanded
+                    || windowSizeClass.heightSizeClass < WindowHeightSizeClass.Medium
 
             WTrackerTheme(viewState.period) {
                 keepScreenAwake(viewState.period.isRunning())
 
                 MainScreen(
-                    state = viewState,
+                    summaryState = viewState,
+                    sessionItems = sessionItems,
                     onWorkClick = viewModel::onWorkSegmentClick,
                     onRestClick = viewModel::onRestSegmentClick,
                     onStartButtonClick = viewModel::onStopResetButtonClicked,
                     onSkipNotificationsButtonClick = viewModel::onSkipNotificationsButtonClick,
-                    windowSizeClass = calculateWindowSizeClass(this)
+                    summaryDisplayMode = summaryDisplayMode,
+                    usePager = usePager
                 )
 
                 when (viewState.dialog) {
