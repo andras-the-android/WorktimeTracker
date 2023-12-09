@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package hu.kts.wtracker.ui.session
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +31,7 @@ import hu.kts.wtracker.ui.theme.Grey
 import hu.kts.wtracker.ui.theme.Red
 import hu.kts.wtracker.ui.theme.WTrackerTheme
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SessionScreen(sessionItems: List<SessionViewItem>) {
     Surface(
@@ -42,17 +46,17 @@ fun SessionScreen(sessionItems: List<SessionViewItem>) {
                 items = sessionItems,
                 key = { it.key },
             ) {
-                SessionItemView(item = it)
+                SessionItemView(Modifier.animateItemPlacement(), item = it)
             }
         }
     }
 }
 
 @Composable
-private fun SessionItemView(item: SessionViewItem) {
+private fun SessionItemView(modifier: Modifier = Modifier, item: SessionViewItem) {
     Text(
         text = stringResource(id = R.string.history_item_text,  item.timestamp, item.durationMinutes),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(item.calcHeight())
             .background(color = item.color)
