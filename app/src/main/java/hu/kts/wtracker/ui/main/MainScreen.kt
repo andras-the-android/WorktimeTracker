@@ -53,7 +53,7 @@ fun MainScreen(
             }
 
             if (usePager) {
-                val pagerState = rememberPagerState(pageCount = { 10 })
+                val pagerState = rememberPagerState(pageCount = { 2 })
 
                 HorizontalPager(state = pagerState) { page ->
                     when (page) {
