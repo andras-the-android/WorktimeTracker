@@ -43,6 +43,11 @@ private val colorsStopped = colorsWork.copy(
     onBackground = work_theme_light_onBackground,
 )
 
+private val colorsChores = colorsWork.copy(
+    background = Chore,
+    onBackground = Grey,
+)
+
 private val colorsRest = lightColorScheme(
     primary = rest_theme_light_primary,
     onPrimary = rest_theme_light_onPrimary,
@@ -78,6 +83,7 @@ private val colorsRest = lightColorScheme(
 private fun Period.getColorScheme(): ColorScheme {
     return when (this) {
         Period.STOPPED -> colorsStopped
+        Period.CHORE -> colorsChores
         Period.WORK -> colorsWork
         Period.REST -> colorsRest
     }

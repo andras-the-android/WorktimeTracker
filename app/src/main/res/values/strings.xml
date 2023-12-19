@@ -8,6 +8,7 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="work">Work</string>
+    <string name="chore">Chore</string>
     <string name="rest">Rest</string>
     <string name="text_to_speech_error">Text to speech engine failed to initialize</string>
     <string name="history_item_text">%1$s - %2$d minutes</string>

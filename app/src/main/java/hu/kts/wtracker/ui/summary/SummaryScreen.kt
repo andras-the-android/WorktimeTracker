@@ -35,6 +35,7 @@ enum class SummaryScreenDisplayMode {
 fun SummaryScreen(
     state: SummaryViewState,
     onWorkClick: () -> Unit,
+    onChoreClick: () -> Unit,
     onRestClick: () -> Unit,
     onStartButtonClick: () -> Unit,
     onSkipNotificationsButtonClick: () -> Unit,
@@ -49,7 +50,7 @@ fun SummaryScreen(
 
         ) {
             EfficiencyText(state = state)
-            TimeSegments(state, onWorkClick, onRestClick, false)
+            TimeSegments(state, onWorkClick, onChoreClick, onRestClick, false)
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -75,6 +76,7 @@ fun SummaryScreen(
                 TimeSegments(
                     state,
                     onWorkClick,
+                    onChoreClick,
                     onRestClick,
                     displayMode == SummaryScreenDisplayMode.Compact
                 )
@@ -121,6 +123,7 @@ private fun Buttons(
 private fun TimeSegments(
     state: SummaryViewState,
     onWorkClick: () -> Unit,
+    onChoreClick: () -> Unit,
     onRestClick: () -> Unit,
     compact: Boolean,
 ) {
@@ -129,6 +132,13 @@ private fun TimeSegments(
         primary = state.workSegment,
         secondary = state.work,
         onClick = onWorkClick,
+        compact = compact
+    )
+    TimeSegment(
+        label = stringResource(id = R.string.chore),
+        primary = state.choreSegment,
+        secondary = state.chore,
+        onClick = onChoreClick,
         compact = compact
     )
     TimeSegment(
@@ -191,8 +201,10 @@ private fun PreviewSummaryScreen(displayMode: SummaryScreenDisplayMode) {
         SummaryScreen(
             state = SummaryViewState(
                 work = "0:00:00",
+                chore = "0:00:00",
                 rest = "0:00:00",
                 workSegment = "0:00:00",
+                choreSegment = "0:00:00",
                 restSegment = "0:00:00",
                 period = Period.STOPPED,
                 dialog = null,
@@ -202,6 +214,7 @@ private fun PreviewSummaryScreen(displayMode: SummaryScreenDisplayMode) {
             displayMode = displayMode,
             onStartButtonClick = {},
             onRestClick = {},
+            onChoreClick = {},
             onWorkClick = {},
             onSkipNotificationsButtonClick = {},
         )

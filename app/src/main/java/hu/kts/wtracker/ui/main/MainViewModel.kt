@@ -37,8 +37,10 @@ class MainViewModel @Inject constructor(
         ) { summaryData, dialogType ->
             return@combine SummaryViewState(
                 summaryData.workSec.hMmSsFormat(),
+                summaryData.choreSec.hMmSsFormat(),
                 summaryData.restSec.hMmSsFormat(),
                 summaryData.workSegmentSec.hMmSsFormat(),
+                summaryData.choreSegmentSec.hMmSsFormat(),
                 summaryData.restSegmentSec.hMmSsFormat(),
                 period,
                 dialogType,
@@ -96,38 +98,37 @@ class MainViewModel @Inject constructor(
         onTimeSegmentClick(Period.WORK)
     }
 
+    fun onChoreSegmentClick() {
+        onTimeSegmentClick(Period.CHORE)
+    }
+
     fun onRestSegmentClick() {
         onTimeSegmentClick(Period.REST)
     }
 
-    private fun onTimeSegmentClick(initialPeriod: Period) {
+    private fun onTimeSegmentClick(newPeriod: Period) {
+        if (newPeriod == period) return
         // if it's already running, switch to the other one regardless which timer was clicked
-        if (period.isRunning()) {
-            if (period == Period.WORK) {
-                summaryData.update { it.copy(period = Period.REST, restSegmentSec = 0) }
-            } else {
-                summaryData.update { it.copy(period = Period.WORK, workSegmentSec = 0) }
-                notifications.resetSkip()
-            }
-        // set the initial value if it's not running
-        } else {
-            if (initialPeriod == Period.WORK) {
-                summaryData.update { it.copy(period = initialPeriod, workSegmentSec = 0) }
-            } else {
-                summaryData.update { it.copy(period = initialPeriod, restSegmentSec = 0) }
-            }
+        if (!period.isRunning()) {
             timer.start()
-            summaryData.update { it.copy(period = initialPeriod) }
+        }
+        when (newPeriod) {
+            Period.WORK -> summaryData.update { it.copy(period = newPeriod, workSegmentSec = 0) }
+            Period.CHORE -> summaryData.update { it.copy(period = newPeriod, choreSegmentSec = 0) }
+            Period.REST -> summaryData.update { it.copy(period = newPeriod, restSegmentSec = 0) }
+            Period.STOPPED -> {}
         }
 
+        summaryData.update { it.copy(period = newPeriod) }
         sessionRepository.addToHistory(period)
     }
 
     private fun onTimerTick() {
-        if (period == Period.WORK) {
-            summaryData.update { it.copy(workSec = it.workSec.inc(), workSegmentSec = it.workSegmentSec.inc()) }
-        } else {
-            summaryData.update { it.copy(restSec = it.restSec.inc(), restSegmentSec = it.restSegmentSec.inc()) }
+        when (period) {
+            Period.WORK -> summaryData.update { it.copy(workSec = it.workSec.inc(), workSegmentSec = it.workSegmentSec.inc()) }
+            Period.CHORE -> summaryData.update { it.copy(choreSec = it.choreSec.inc(), choreSegmentSec = it.choreSegmentSec.inc()) }
+            Period.REST -> summaryData.update { it.copy(restSec = it.restSec.inc(), restSegmentSec = it.restSegmentSec.inc()) }
+            Period.STOPPED -> {}
         }
         notifications.trigger(summaryData.value)
     }

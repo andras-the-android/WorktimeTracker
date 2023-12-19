@@ -46,8 +46,10 @@ class SessionRepository @Inject constructor(
         val period = sessionItems.last().period
 
         var workSec = 0
+        var choreSec = 0
         var restSec = 0
         var workSegmentSec = 0
+        var choreSegmentSec = 0
         var restSegmentSec = 0
 
         sessionItems.forEachIndexed { index, item ->
@@ -59,17 +61,24 @@ class SessionRepository @Inject constructor(
                     workSegmentSec = item.getOngoingDuration()
                     workSec += workSegmentSec
                 }
+
+                Period.CHORE -> {
+                    choreSegmentSec = item.getOngoingDuration()
+                    choreSec += restSegmentSec
+                }
+
                 Period.REST -> {
                     restSegmentSec = item.getOngoingDuration()
                     restSec += restSegmentSec
                 }
-                else -> {}
+
+                Period.STOPPED -> {}
             }
         }
 
         _sessionItems.value = sessionItems
 
-        return SummaryData(workSec, restSec, workSegmentSec, restSegmentSec, period)
+        return SummaryData(workSec, choreSec, restSec, workSegmentSec, choreSegmentSec, restSegmentSec, period)
     }
 
     /**

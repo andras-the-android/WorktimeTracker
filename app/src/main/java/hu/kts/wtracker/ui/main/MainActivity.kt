@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
                     summaryState = viewState,
                     sessionItems = sessionItems,
                     onWorkClick = viewModel::onWorkSegmentClick,
+                    onChoreClick = viewModel::onChoreSegmentClick,
                     onRestClick = viewModel::onRestSegmentClick,
                     onStartButtonClick = viewModel::onStopResetButtonClicked,
                     onSkipNotificationsButtonClick = viewModel::onSkipNotificationsButtonClick,

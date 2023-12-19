@@ -29,6 +29,7 @@ fun MainScreen(
     summaryState: SummaryViewState,
     sessionItems: List<SessionViewItem>,
     onWorkClick: () -> Unit = {},
+    onChoreClick: () -> Unit = {},
     onRestClick: () -> Unit = {},
     onStartButtonClick: () -> Unit = {},
     onSkipNotificationsButtonClick: () -> Unit,
@@ -45,6 +46,7 @@ fun MainScreen(
                 SummaryScreen(
                     state = summaryState,
                     onWorkClick = onWorkClick,
+                    onChoreClick = onChoreClick,
                     onRestClick = onRestClick,
                     onStartButtonClick = onStartButtonClick,
                     onSkipNotificationsButtonClick = onSkipNotificationsButtonClick,
@@ -123,8 +125,10 @@ fun PreviewMainScreenTabletLandscape() {
 
 private val previewSummaryState = SummaryViewState(
     work = "0:00:00",
+    chore = "0:00:00",
     rest = "0:00:00",
     workSegment = "0:00:00",
+    choreSegment = "0:00:00",
     restSegment = "0:00:00",
     period = Period.STOPPED,
     dialog = null,

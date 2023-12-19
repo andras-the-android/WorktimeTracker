@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import hu.kts.wtracker.data.Period
 import hu.kts.wtracker.data.SessionViewItem
 import hu.kts.wtracker.repository.SessionRepository
+import hu.kts.wtracker.ui.theme.Chore
 import hu.kts.wtracker.ui.theme.Green
 import hu.kts.wtracker.ui.theme.Red
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +46,7 @@ class SessionViewModel @Inject constructor(
 
     private fun Period.color() = when (this) {
         Period.STOPPED -> White
+        Period.CHORE -> Chore
         Period.WORK -> Green
         Period.REST -> Red
     }
